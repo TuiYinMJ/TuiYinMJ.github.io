@@ -6,79 +6,51 @@
     <title>专业外贸PI和报价单生成系统</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-4">
         <h1 class="text-center mb-4">专业外贸PI和报价单生成系统</h1>
-        <form id="quoteForm" class="needs-validation" novalidate>
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>卖方信息</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="companyLogo" class="form-label">公司Logo URL:</label>
-                                <input type="url" class="form-control" id="companyLogo">
-                            </div>
-                            <div class="mb-3">
-                                <label for="companyName" class="form-label">公司名称:</label>
-                                <input type="text" class="form-control" id="companyName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="companyAddress" class="form-label">公司地址:</label>
-                                <textarea class="form-control" id="companyAddress" required></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="companyContact" class="form-label">联系人:</label>
-                                <input type="text" class="form-control" id="companyContact" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="companyPhone" class="form-label">电话:</label>
-                                <input type="tel" class="form-control" id="companyPhone" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="companyEmail" class="form-label">邮箱:</label>
-                                <input type="email" class="form-control" id="companyEmail" required>
-                            </div>
+        
+        <!-- 模板管理 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>模板管理</h3>
+                <div>
+                    <button class="btn btn-outline-primary" id="saveTemplate">
+                        <i class="bi bi-save"></i> 保存为模板
+                    </button>
+                    <button class="btn btn-outline-secondary" id="loadTemplate">
+                        <i class="bi bi-folder"></i> 加载模板
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="templateName" class="form-label">模板名称:</label>
+                            <input type="text" class="form-control" id="templateName">
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>买方信息</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="clientName" class="form-label">客户名称:</label>
-                                <input type="text" class="form-control" id="clientName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="clientAddress" class="form-label">客户地址:</label>
-                                <textarea class="form-control" id="clientAddress" required></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="clientContact" class="form-label">联系人:</label>
-                                <input type="text" class="form-control" id="clientContact" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="clientPhone" class="form-label">电话:</label>
-                                <input type="tel" class="form-control" id="clientPhone" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="clientEmail" class="form-label">邮箱:</label>
-                                <input type="email" class="form-control" id="clientEmail" required>
-                            </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="templateType" class="form-label">模板类型:</label>
+                            <select class="form-select" id="templateType">
+                                <option value="PI">形式发票模板</option>
+                                <option value="QUOTATION">报价单模板</option>
+                            </select>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <form id="quoteForm" class="needs-validation" novalidate>
+            <!-- 文档类型选择 -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3>单据信息</h3>
+                    <h3>文档信息</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -113,6 +85,131 @@
                 </div>
             </div>
 
+            <!-- 卖方信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>卖方信息</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="companyLogo" class="form-label">公司Logo URL:</label>
+                                <input type="url" class="form-control" id="companyLogo">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="companyName" class="form-label">公司名称:</label>
+                                <input type="text" class="form-control" id="companyName" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="companyAddress" class="form-label">公司地址:</label>
+                                <textarea class="form-control" id="companyAddress" rows="2" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="companyContact" class="form-label">联系人:</label>
+                                <input type="text" class="form-control" id="companyContact" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="companyPhone" class="form-label">电话:</label>
+                                <input type="tel" class="form-control" id="companyPhone" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="companyEmail" class="form-label">邮箱:</label>
+                                <input type="email" class="form-control" id="companyEmail" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="bankName" class="form-label">银行名称:</label>
+                                <input type="text" class="form-control" id="bankName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="swiftCode" class="form-label">SWIFT代码:</label>
+                                <input type="text" class="form-control" id="swiftCode" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="bankAccount" class="form-label">银行账号:</label>
+                                <input type="text" class="form-control" id="bankAccount" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 买方信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>买方信息</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="clientName" class="form-label">客户名称:</label>
+                                <input type="text" class="form-control" id="clientName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="clientContact" class="form-label">联系人:</label>
+                                <input type="text" class="form-control" id="clientContact" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="clientAddress" class="form-label">客户地址:</label>
+                                <textarea class="form-control" id="clientAddress" rows="2" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="clientPhone" class="form-label">电话:</label>
+                                <input type="tel" class="form-control" id="clientPhone" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="clientEmail" class="form-label">邮箱:</label>
+                                <input type="email" class="form-control" id="clientEmail" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="clientFax" class="form-label">传真:</label>
+                                <input type="text" class="form-control" id="clientFax">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商品列表 -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h3>商品列表</h3>
@@ -147,6 +244,7 @@
                 </div>
             </div>
 
+            <!-- 交易条款 -->
             <div class="card mb-4">
                 <div class="card-header">
                     <h3>交易条款</h3>
@@ -182,23 +280,122 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="portOfLoading" class="form-label">装运港:</label>
-                        <input type="text" class="form-control" id="portOfLoading" required>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="portOfLoading" class="form-label">装运港:</label>
+                                <input type="text" class="form-control" id="portOfLoading" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="portOfDestination" class="form-label">目的港:</label>
+                                <input type="text" class="form-control" id="portOfDestination" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="transportMode" class="form-label">运输方式:</label>
+                                <select class="form-select" id="transportMode" required>
+                                    <option value="SEA">海运</option>
+                                    <option value="AIR">空运</option>
+                                    <option value="LAND">陆运</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="portOfDestination" class="form-label">目的港:</label>
-                        <input type="text" class="form-control" id="portOfDestination" required>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="advancePayment" class="form-label">预付款比例:</label>
+                                <input type="number" class="form-control" id="advancePayment" min="0" max="100" value="30">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="moq" class="form-label">最小起订量:</label>
+                                <input type="number" class="form-control" id="moq" min="1">
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="remarks" class="form-label">备注:</label>
-                        <textarea class="form-control" id="remarks" rows="3"></textarea>
+                </div>
+            </div>
+
+            <!-- 包装信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>包装信息</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="packageType" class="form-label">包装类型:</label>
+                                <select class="form-select" id="packageType">
+                                    <option value="CARTON">纸箱</option>
+                                    <option value="WOODEN">木箱</option>
+                                    <option value="PALLET">托盘</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="packageSize" class="form-label">包装尺寸:</label>
+                                <input type="text" class="form-control" id="packageSize" placeholder="长x宽x高(cm)">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="packageWeight" class="form-label">包装重量:</label>
+                                <input type="number" class="form-control" id="packageWeight" placeholder="kg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 其他信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>其他信息</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="remarks" class="form-label">备注:</label>
+                                <textarea class="form-control" id="remarks" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="terms" class="form-label">条款和条件:</label>
+                                <textarea class="form-control" id="terms" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 打印选项 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>打印选项</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="fitToPage">
+                        <label class="form-check-label" for="fitToPage">
+                            适应单页打印
+                        </label>
                     </div>
                 </div>
             </div>
 
             <div class="text-center mb-4">
-                <button type="submit" class="btn btn-primary btn-lg">生成PI/报价单</button>
+                <button type="submit" class="btn btn-primary btn-lg">生成文档</button>
                 <button type="button" class="btn btn-secondary btn-lg ms-2" id="previewBtn">预览</button>
             </div>
         </form>

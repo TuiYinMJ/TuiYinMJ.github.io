@@ -78,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const modalProductList = getEl("modal-product-list");
 	const modalSearchInput = getEl("modal-search-input");
 	const exportBtn = getEl("export-data-btn");
+	const exportExcelBtn = getEl("export-excel-btn");
 	const importInput = getEl("import-data-input");
 	const buyerNameInput = getEl("buyer-name");
 	const buyerAddressInput = getEl("buyer-address");
@@ -443,6 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	};
 
+	// --- UPDATED to hide empty fields ---
 	const handlePiFormSubmit = (e) => {
 		e.preventDefault();
 		const currency = docCurrencySelect.value;
@@ -453,12 +455,19 @@ document.addEventListener("DOMContentLoaded", () => {
 						"<br>"
 				  )}</p></div>`
 				: "";
-		const remarksHTML = docRemarksInput.value
+		const remarksHTML = docRemarksInput.value.trim()
 			? `<div class="print-terms"><h3>REMARKS:</h3><p>${docRemarksInput.value.replace(
 					/\n/g,
 					"<br>"
 			  )}</p></div>`
 			: "";
+		const attnHTML = buyerAttnInput.value.trim()
+			? `<p>Attn: ${buyerAttnInput.value}</p>`
+			: "";
+		const preparedByHTML = docPreparedByInput.value.trim()
+			? `<p>Prepared by: ${docPreparedByInput.value}</p>`
+			: "";
+
 		getEl("print-preview-area").innerHTML = `
             <div class="print-container">
                 <header class="print-header">
@@ -479,7 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
 										}</strong></p><p>${buyerAddressInput.value.replace(
 			/\n/g,
 			"<br>"
-		)}</p><p>Attn: ${buyerAttnInput.value}</p></div>
+		)}</p>${attnHTML}</div>
                     <div class="doc-info">
                         <p><strong>No.:</strong> ${
 													docIdInput.value
@@ -507,7 +516,6 @@ document.addEventListener("DOMContentLoaded", () => {
 														row.querySelector(".quote-item-qty").value
 													) || 0;
 
-												// --- KEY CHANGE: Build description string with <br> tags ---
 												const descriptionParts = [];
 												descriptionParts.push(
 													`<strong>${item.model}:</strong> ${item.name}`
@@ -553,12 +561,20 @@ document.addEventListener("DOMContentLoaded", () => {
                         <tr><td>Subtotal:</td><td>${
 													subtotalSpan.textContent
 												}</td></tr>
-                        <tr><td>Freight Cost:</td><td>${parseFloat(
-													freightCostInput.value || 0
-												).toFixed(2)} ${currency}</td></tr>
-                        <tr><td>Insurance:</td><td>${parseFloat(
-													insuranceCostInput.value || 0
-												).toFixed(2)} ${currency}</td></tr>
+                        ${
+													(parseFloat(freightCostInput.value) || 0) > 0
+														? `<tr><td>Freight Cost:</td><td>${parseFloat(
+																freightCostInput.value || 0
+														  ).toFixed(2)} ${currency}</td></tr>`
+														: ""
+												}
+                        ${
+													(parseFloat(insuranceCostInput.value) || 0) > 0
+														? `<tr><td>Insurance:</td><td>${parseFloat(
+																insuranceCostInput.value || 0
+														  ).toFixed(2)} ${currency}</td></tr>`
+														: ""
+												}
                         <tr class="grand-total"><td>GRAND TOTAL:</td><td>${
 													grandTotalSpan.textContent
 												}</td></tr>
@@ -566,23 +582,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 </section>
                 <section class="print-terms">
                     <h3>TERMS & CONDITIONS:</h3>
-                    <p><strong>Port of Loading:</strong> ${
-											portLoadingInput.value
-										}</p><p><strong>Port of Destination:</strong> ${
-			portDestinationInput.value
-		}</p>
+                    ${
+											portLoadingInput.value.trim()
+												? `<p><strong>Port of Loading:</strong> ${portLoadingInput.value}</p>`
+												: ""
+										}
+                    ${
+											portDestinationInput.value.trim()
+												? `<p><strong>Port of Destination:</strong> ${portDestinationInput.value}</p>`
+												: ""
+										}
                     <p><strong>Payment Terms:</strong> ${paymentTermsInput.value.replace(
 											/\n/g,
 											"<br>"
-										)}</p><p><strong>Lead Time:</strong> ${leadTimeInput.value.replace(
-			/\n/g,
-			"<br>"
-		)}</p>
+										)}</p>
+                    <p><strong>Lead Time:</strong> ${leadTimeInput.value.replace(
+											/\n/g,
+											"<br>"
+										)}</p>
                 </section>
                 ${remarksHTML}
                 ${bankInfoHTML}
                 <footer class="print-footer">
-                    <p>Prepared by: ${docPreparedByInput.value || "N/A"}</p>
+                    ${preparedByHTML}
                     <div><p>Authorized Signature</p><p style="margin-top:20px;">_________________________</p></div>
                 </footer>
             </div>`;
@@ -605,6 +627,222 @@ document.addEventListener("DOMContentLoaded", () => {
 				qty * price
 			).toFixed(2);
 		}
+	};
+
+	// --- COMPLETELY REWRITTEN to export HTML to Excel with images and styles ---
+	const handleExportToExcel = () => {
+		exportExcelBtn.textContent = "正在生成...";
+		exportExcelBtn.disabled = true;
+
+		const docType = docTypeSelect.value.replace(/_/g, " ");
+		const currency = docCurrencySelect.value;
+		const fileName = `${docType}_${docIdInput.value || "Draft"}.xls`;
+
+		// Use the same logic as print to generate the HTML string
+		const bankInfoHTML =
+			docTypeSelect.value === "PROFORMA INVOICE" && settings.bankInfo
+				? `<p><b>BANK INFORMATION:</b><br>${settings.bankInfo.replace(
+						/\n/g,
+						"<br>"
+				  )}</p>`
+				: "";
+		const remarksHTML = docRemarksInput.value.trim()
+			? `<p><b>REMARKS:</b><br>${docRemarksInput.value.replace(
+					/\n/g,
+					"<br>"
+			  )}</p>`
+			: "";
+		const attnHTML = buyerAttnInput.value.trim()
+			? `<tr><td colspan="2">Attn: ${buyerAttnInput.value}</td></tr>`
+			: "";
+
+		const productRows = quoteItems
+			.map((item, index) => {
+				const row = query(`#quote-product-list tr[data-index="${index}"]`);
+				const price =
+					parseFloat(row.querySelector(".quote-item-price").value) || 0;
+				const qty = parseInt(row.querySelector(".quote-item-qty").value) || 0;
+
+				const descriptionParts = [];
+				descriptionParts.push(`<b>${item.model}:</b> ${item.name}`);
+
+				const specs = row.querySelector(".quote-item-specs").value.trim();
+				if (specs) descriptionParts.push(specs.replace(/\n/g, "<br>"));
+				if (item.packaging)
+					descriptionParts.push(`Packaging: ${item.packaging}`);
+				if (item.hsCode) descriptionParts.push(`HS Code: ${item.hsCode}`);
+				if (item.netWeight || item.grossWeight) {
+					descriptionParts.push(
+						`N.W.:${item.netWeight || "N/A"} KGS / G.W.:${
+							item.grossWeight || "N/A"
+						} KGS`
+					);
+				}
+
+				return `<tr>
+                <td style="text-align:center; vertical-align:top;">${
+									index + 1
+								}</td>
+                <td style="text-align:center; vertical-align:top;"><img src="${
+									item.image || "https://placehold.co/80x80/eee/ccc?text=No+Img"
+								}" width="80" height="80"></td>
+                <td style="vertical-align:top;">${descriptionParts.join(
+									"<br>"
+								)}</td>
+                <td style="text-align:center; vertical-align:top;">${qty}</td>
+                <td style="text-align:center; vertical-align:top;">${
+									item.unit
+								}</td>
+                <td style="text-align:right; vertical-align:top;">${price.toFixed(
+									2
+								)}</td>
+                <td style="text-align:right; vertical-align:top;">${(
+									qty * price
+								).toFixed(2)}</td>
+            </tr>`;
+			})
+			.join("");
+
+		const freightCost = parseFloat(freightCostInput.value) || 0;
+		const insuranceCost = parseFloat(insuranceCostInput.value) || 0;
+
+		const summaryHTML = `
+            <tr>
+                <td colspan="5" rowspan="4">
+                    <p><b>TERMS & CONDITIONS:</b></p>
+                    ${
+											portLoadingInput.value.trim()
+												? `<p>Port of Loading: ${portLoadingInput.value}</p>`
+												: ""
+										}
+                    ${
+											portDestinationInput.value.trim()
+												? `<p>Port of Destination: ${portDestinationInput.value}</p>`
+												: ""
+										}
+                    <p>Payment Terms: ${paymentTermsInput.value.replace(
+											/\n/g,
+											"<br>"
+										)}</p>
+                    <p>Lead Time: ${leadTimeInput.value.replace(
+											/\n/g,
+											"<br>"
+										)}</p>
+                </td>
+                <td>Subtotal:</td>
+                <td style="text-align:right;">${
+									subtotalSpan.textContent.split(" ")[0]
+								}</td>
+            </tr>
+            ${
+							freightCost > 0
+								? `<tr><td>Freight Cost:</td><td style="text-align:right;">${freightCost.toFixed(
+										2
+								  )}</td></tr>`
+								: "<tr><td></td><td></td></tr>"
+						}
+            ${
+							insuranceCost > 0
+								? `<tr><td>Insurance:</td><td style="text-align:right;">${insuranceCost.toFixed(
+										2
+								  )}</td></tr>`
+								: "<tr><td></td><td></td></tr>"
+						}
+            <tr>
+                <td><b>GRAND TOTAL:</b></td>
+                <td style="text-align:right;"><b>${
+									grandTotalSpan.textContent.split(" ")[0]
+								}</b></td>
+            </tr>
+        `;
+
+		const finalHTML = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <table border="1">
+                    <tr>
+                        <td colspan="4" style="font-size:14pt;">
+                            <b>${settings.companyName || ""}</b><br>
+                            ${(settings.companyAddress || "").replace(
+															/\n/g,
+															"<br>"
+														)}<br>
+                            ${(settings.companyContact || "").replace(
+															/\n/g,
+															"<br>"
+														)}
+                        </td>
+                        <td colspan="3" style="text-align:center; vertical-align:middle; font-size:18pt; font-weight:bold;">
+                            ${
+															settings.logo
+																? `<img src="${settings.logo}" width="180"><br>`
+																: ""
+														}
+                            ${docType}
+                        </td>
+                    </tr>
+                    <tr><td colspan="7"></td></tr>
+                    <tr>
+                        <td colspan="2"><b>TO:</b></td>
+                        <td></td>
+                        <td colspan="2"><b>No.:</b></td>
+                        <td colspan="2">${docIdInput.value}</td>
+                    </tr>
+                     <tr>
+                        <td colspan="2">${buyerNameInput.value}</td>
+                        <td></td>
+                        <td colspan="2"><b>Date:</b></td>
+                        <td colspan="2">${docDateInput.value}</td>
+                    </tr>
+                     <tr>
+                        <td colspan="2" rowspan="2">${buyerAddressInput.value.replace(
+													/\n/g,
+													"<br>"
+												)}</td>
+                        <td></td>
+                        <td colspan="2"><b>Incoterms:</b></td>
+                        <td colspan="2">${docIncotermsInput.value}</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="2"><b>Validity:</b></td>
+                        <td colspan="2">${docValidityInput.value} Days</td>
+                    </tr>
+                    ${attnHTML}
+                    <tr><td colspan="7"></td></tr>
+                    <tr style="background-color:#f2f2f2; font-weight:bold; text-align:center;">
+                        <td>Item No.</td>
+                        <td>Image</td>
+                        <td>Description</td>
+                        <td>QTY</td>
+                        <td>Unit</td>
+                        <td>Unit Price(${currency})</td>
+                        <td>Amount(${currency})</td>
+                    </tr>
+                    ${productRows}
+                    <tr><td colspan="7"></td></tr>
+                    ${summaryHTML}
+                    <tr><td colspan="7"></td></tr>
+                    <tr><td colspan="7">${remarksHTML}</td></tr>
+                    <tr><td colspan="7">${bankInfoHTML}</td></tr>
+                </table>
+            </body>
+            </html>
+        `;
+
+		const blob = new Blob([finalHTML], { type: "application/vnd.ms-excel" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = fileName;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+
+		exportExcelBtn.textContent = "导出为 Excel";
+		exportExcelBtn.disabled = false;
 	};
 
 	function init() {
@@ -681,6 +919,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			quoteCurrencyLabel.textContent = docCurrencySelect.value;
 			renderQuoteItems();
 		});
+
+		// Add event listener for the new Excel button
+		exportExcelBtn.addEventListener("click", handleExportToExcel);
 
 		showProductModalBtn.addEventListener("click", () => {
 			renderModalProducts();

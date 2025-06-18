@@ -30,19 +30,19 @@
                 <button id="export-data-btn">导出数据 (备份)</button>
                 <label for="import-data-input" class="import-data-label">导入数据 (恢复)</label>
                 <input type="file" id="import-data-input" accept=".json">
-                <p class="version">Version 8.0.0</p>
+                <p class="version">Version 11.0.0</p>
             </div>
         </aside>
 
         <main class="main-content">
             <div id="dashboard" class="module active">
-                <h1>欢迎使用外贸业务助手 V8.0</h1>
-                <p>此版本针对打印效果进行了决定性的优化，解决了行高过大的问题。</p>
-                <h3>V8 更新日志:</h3>
+                <h1>欢迎使用外贸业务助手 V11.0</h1>
+                <p>此版本彻底重构了“导出为 Excel”功能，并增加了智能隐藏空字段的逻辑。</p>
+                <h3>V11 更新日志:</h3>
                 <ol>
-                    <li><strong>【核心修复】</strong> 彻底解决了打印/生成PDF时，商品表格行高过大的问题，排版更紧凑专业。</li>
-                    <li><strong>【UI 优化】</strong> 优化了打印表格的垂直对齐方式，内容将从顶部开始显示。</li>
-                    <li><strong>【问题修复】</strong> 确认所有功能（如点击、小数输入、动态汇率）均可正常使用。</li>
+                    <li><strong>【核心重构】</strong> 采用全新技术，现在导出Excel可以完美保留图片、格式、颜色和排版。</li>
+                    <li><strong>【智能优化】</strong> 打印和导出Excel时，将自动隐藏用户未填写的项目（如Attn、规格等），使单据更专业。</li>
+                    <li><strong>【问题修复】</strong> 确认所有历史问题（行高、白屏、点击、小数输入）均已修复。</li>
                 </ol>
             </div>
 
@@ -63,11 +63,11 @@
                             <legend>客户信息</legend>
                             <input type="text" id="buyer-name" placeholder="客户公司名称" required>
                             <textarea id="buyer-address" placeholder="客户公司地址" required></textarea>
-                            <input type="text" id="buyer-attn" placeholder="联系人 (Attn)" required>
+                            <input type="text" id="buyer-attn" placeholder="联系人 (Attn), 可留空">
                         </fieldset>
                         <fieldset>
                             <legend>我方与单据信息</legend>
-                            <input type="text" id="doc-prepared-by" placeholder="制单人 (Prepared by)">
+                            <input type="text" id="doc-prepared-by" placeholder="制单人 (Prepared by), 可留空">
                             <div class="input-with-addon">
                                 <input type="text" id="doc-id" placeholder="单据号">
                                 <button type="button" id="generate-doc-id-btn" class="addon-btn"
@@ -103,8 +103,10 @@
                             <legend>价格与条款</legend>
                             <div class="form-grid">
                                 <div>
-                                    <label for="port-loading">装运港</label><input type="text" id="port-loading">
-                                    <label for="port-destination">目的港</label><input type="text" id="port-destination">
+                                    <label for="port-loading">装运港</label><input type="text" id="port-loading"
+                                        placeholder="可留空">
+                                    <label for="port-destination">目的港</label><input type="text" id="port-destination"
+                                        placeholder="可留空">
                                     <label for="payment-terms">付款方式</label><textarea id="payment-terms"
                                         rows="2"></textarea>
                                     <label for="lead-time">交货期</label><textarea id="lead-time" rows="2"></textarea>
@@ -117,14 +119,18 @@
                                             id="insurance-cost" value="0" step="0.01"></div>
                                     <div class="total-row total-grand"><label>最终总计:</label><span
                                             id="grand-total">0.00</span></div>
-                                    <label for="doc-remarks">备注</label><textarea id="doc-remarks" rows="2"></textarea>
+                                    <label for="doc-remarks">备注</label><textarea id="doc-remarks" rows="2"
+                                        placeholder="可留空"></textarea>
                                 </div>
                             </div>
                         </fieldset>
                     </div>
 
-                    <div class="form-actions"><button type="submit" class="btn-primary">生成预览 & 打印</button><button
-                            type="reset" class="btn-secondary">重置表单</button></div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">生成预览 & 打印</button>
+                        <button type="button" id="export-excel-btn" class="btn-export">导出为 Excel</button>
+                        <button type="reset" class="btn-secondary">重置表单</button>
+                    </div>
                 </form>
             </div>
 
@@ -137,7 +143,7 @@
                             <input type="hidden" id="product-id">
                             <input type="text" id="product-model" placeholder="产品型号 (唯一)" required>
                             <input type="text" id="product-name" placeholder="产品名称" required>
-                            <textarea id="product-specs" placeholder="产品规格" rows="3"></textarea>
+                            <textarea id="product-specs" placeholder="产品规格 (可留空)" rows="3"></textarea>
                             <div class="image-source-selector"><label>图片来源:</label><label class="radio-label"><input
                                         type="radio" name="image-source" value="local" checked> 本地上传</label><label
                                     class="radio-label"><input type="radio" name="image-source" value="url">
@@ -150,13 +156,15 @@
                             <input type="hidden" id="product-image-storage">
                             <div class="form-grid-col2"><input type="text" id="product-unit"
                                     placeholder="单位 (e.g., PCS)" required><input type="text" id="product-hs-code"
-                                    placeholder="HS Code (海关编码)"></div>
-                            <textarea id="product-packaging" placeholder="包装信息 (如: 10pcs/carton)" rows="2"></textarea>
+                                    placeholder="HS Code (可留空)"></div>
+                            <textarea id="product-packaging" placeholder="包装信息 (可留空)" rows="2"></textarea>
                             <div class="form-grid-col2">
-                                <div class="input-group"><input type="number" id="product-net-weight" placeholder="净重"
-                                        step="0.01"><span class="input-group-text">KGS</span></div>
-                                <div class="input-group"><input type="number" id="product-gross-weight" placeholder="毛重"
-                                        step="0.01"><span class="input-group-text">KGS</span></div>
+                                <div class="input-group"><input type="number" id="product-net-weight"
+                                        placeholder="净重 (可留空)" step="0.01"><span class="input-group-text">KGS</span>
+                                </div>
+                                <div class="input-group"><input type="number" id="product-gross-weight"
+                                        placeholder="毛重 (可留空)" step="0.01"><span class="input-group-text">KGS</span>
+                                </div>
                             </div>
                             <fieldset>
                                 <legend>价格计算</legend>

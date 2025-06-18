@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyContactInput = getEl('setting-company-contact');
     const bankInfoInput = getEl('setting-bank-info');
     const baseCurrencyInput = getEl('setting-base-currency');
-    const targetCurrenciesInput = getEl('setting-target-currencies');
+    // const targetCurrenciesInput = getEl('setting-target-currencies'); // MODIFIED: This is removed.
+    const currencyPairsContainer = getEl('currency-pairs-container'); // MODIFIED: Added
+    const addCurrencyBtn = getEl('add-currency-btn'); // MODIFIED: Added
     const defaultPaymentInput = getEl('setting-default-payment');
     const defaultLeadtimeInput = getEl('setting-default-leadtime');
     const defaultPortLoadingInput = getEl('setting-default-port-loading');
@@ -92,6 +94,19 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     };
 
+    // --- MODIFIED: Helper function to add a currency row ---
+    const addCurrencyRow = (currency = { code: '', rate: '' }) => {
+        const div = document.createElement('div');
+        div.className = 'currency-pair';
+        div.innerHTML = `
+            <input type="text" class="currency-code" placeholder="币种代码 (如: USD)" value="${currency.code}" style="flex: 1;">
+            <input type="number" class="currency-rate" placeholder="对基准货币的汇率" value="${currency.rate}" style="flex: 2;" step="0.0001">
+            <button type="button" class="remove-currency-btn">&times;</button>
+        `;
+        currencyPairsContainer.appendChild(div);
+        div.querySelector('.remove-currency-btn').addEventListener('click', () => div.remove());
+    };
+
     const renderSettings = () => {
         const s = settings;
         companyNameInput.value = s.companyName || '';
@@ -99,7 +114,12 @@ document.addEventListener('DOMContentLoaded', () => {
         companyContactInput.value = s.companyContact || '';
         bankInfoInput.value = s.bankInfo || '';
         baseCurrencyInput.value = s.baseCurrency || 'CNY';
-        targetCurrenciesInput.value = (s.targetCurrencies || []).map(c => `${c.code}:${c.rate}`).join('\n');
+        
+        // --- MODIFIED: Render currency pairs ---
+        currencyPairsContainer.innerHTML = '';
+        const currencies = s.targetCurrencies || [{ code: 'USD', rate: 7.25 }];
+        currencies.forEach(addCurrencyRow);
+
         defaultPaymentInput.value = s.defaultPayment || '';
         defaultLeadtimeInput.value = s.defaultLeadtime || '';
         defaultPortLoadingInput.value = s.defaultPortLoading || '';
@@ -226,10 +246,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleSettingsSave = (e) => {
         e.preventDefault();
-        const currencies = targetCurrenciesInput.value.split('\n').map(l => l.trim()).filter(l => l.includes(':')).map(l => {
-            const [code, rate] = l.split(':');
-            return { code: code.trim().toUpperCase(), rate: parseFloat(rate.trim()) };
-        }).filter(c => c.code && !isNaN(c.rate));
+        // --- MODIFIED: Read currencies from dynamic inputs ---
+        const currencies = [];
+        queryAll('.currency-pair').forEach(row => {
+            const code = row.querySelector('.currency-code').value.trim().toUpperCase();
+            const rate = parseFloat(row.querySelector('.currency-rate').value.trim());
+            if (code && !isNaN(rate)) {
+                currencies.push({ code, rate });
+            }
+        });
+
         const logoSource = query('input[name="logo-source"]:checked').value;
         settings = {
             companyName: companyNameInput.value, companyAddress: companyAddressInput.value, companyContact: companyContactInput.value,
@@ -415,6 +441,10 @@ document.addEventListener('DOMContentLoaded', () => {
         quoteProductList.addEventListener('input', handleQuoteListUpdate);
         quoteProductList.addEventListener('click', handleQuoteListUpdate);
         [freightCostInput, insuranceCostInput].forEach(el => el.addEventListener('input', updateTotals));
+        
+        // --- MODIFIED: Add event listener for the new button ---
+        addCurrencyBtn.addEventListener('click', () => addCurrencyRow());
+
         exportBtn.addEventListener('click', () => {
             const data = JSON.stringify({ settings, products }, null, 2);
             const blob = new Blob([data], {type: "application/json"});

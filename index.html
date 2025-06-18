@@ -163,8 +163,12 @@
                     <legend>财务与币种</legend>
                     <textarea id="setting-bank-info" placeholder="必填项(形式发票PI): 银行名称, SWIFT, 账号等..." rows="4"></textarea>
                     <label for="setting-base-currency">成本基准货币 (如: CNY)</label><input type="text" id="setting-base-currency" value="CNY" required>
-                    <label for="setting-target-currencies">销售币种与汇率 (每行一个, 格式: USD:7.25)</label><textarea id="setting-target-currencies" rows="4" placeholder="USD:7.25&#10;EUR:8.00&#10;JPY:0.05"></textarea>
-                </fieldset>
+                    
+                    <label>销售币种与汇率</label>
+                    <div id="currency-pairs-container">
+                        </div>
+                    <button type="button" id="add-currency-btn" class="btn-secondary" style="margin-top: -5px; padding: 8px 15px;">+ 添加币种</button>
+                    </fieldset>
                 <fieldset>
                     <legend>默认条款</legend>
                     <input type="text" id="setting-default-port-loading" placeholder="默认装运港 (如: Shanghai, China)">

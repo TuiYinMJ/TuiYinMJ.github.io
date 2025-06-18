@@ -30,21 +30,19 @@
                 <button id="export-data-btn">导出数据 (备份)</button>
                 <label for="import-data-input" class="import-data-label">导入数据 (恢复)</label>
                 <input type="file" id="import-data-input" accept=".json">
-                <p class="version">Version 5.0.0</p>
+                <p class="version">Version 8.0.0</p>
             </div>
         </aside>
 
         <main class="main-content">
             <div id="dashboard" class="module active">
-                <h1>欢迎使用外贸业务助手 V5.0</h1>
-                <p>此版本为重大优化更新，专注于打印效果和核心用户体验。</p>
-                <h3>V5 更新日志:</h3>
+                <h1>欢迎使用外贸业务助手 V8.0</h1>
+                <p>此版本针对打印效果进行了决定性的优化，解决了行高过大的问题。</p>
+                <h3>V8 更新日志:</h3>
                 <ol>
-                    <li><strong>【打印优化】</strong> 彻底重写打印样式，布局更紧凑专业，优先在一页内展示。</li>
-                    <li><strong>【功能增强】</strong> 单据号(Doc ID)旁增加刷新按钮，可随时生成新号码。</li>
-                    <li><strong>【内容增强】</strong> 新增“备注”字段；并确保PI单据必定会显示银行信息。</li>
-                    <li><strong>【UX 优化】</strong> “有效期”、“重量”等输入框增加固定单位，用户只需填数字。</li>
-                    <li><strong>【UI 优化】</strong> “从商品库添加”按钮已美化。</li>
+                    <li><strong>【核心修复】</strong> 彻底解决了打印/生成PDF时，商品表格行高过大的问题，排版更紧凑专业。</li>
+                    <li><strong>【UI 优化】</strong> 优化了打印表格的垂直对齐方式，内容将从顶部开始显示。</li>
+                    <li><strong>【问题修复】</strong> 确认所有功能（如点击、小数输入、动态汇率）均可正常使用。</li>
                 </ol>
             </div>
 
@@ -216,9 +214,14 @@
                             rows="4"></textarea>
                         <label for="setting-base-currency">成本基准货币 (如: CNY)</label><input type="text"
                             id="setting-base-currency" value="CNY" required>
-                        <label for="setting-target-currencies">销售币种与汇率 (每行一个, 格式: USD:7.25)</label><textarea
-                            id="setting-target-currencies" rows="4"
-                            placeholder="USD:7.25&#10;EUR:8.00&#10;JPY:0.05"></textarea>
+
+                        <label>销售币种与汇率</label>
+                        <div id="currency-pairs-container">
+                            <!-- Currency pairs will be dynamically inserted here by app.js -->
+                        </div>
+                        <button type="button" id="add-currency-btn" class="btn-secondary"
+                            style="margin-top: -5px; padding: 8px 15px;">+ 添加币种</button>
+
                     </fieldset>
                     <fieldset>
                         <legend>默认条款</legend>

@@ -1,4 +1,4 @@
-/* --- 全局样式 V5.0 --- */
+/* --- 全局样式 V8.0 --- */
 :root {
     --primary-color: #1a73e8;
     --secondary-color: #5f6368;
@@ -547,55 +547,27 @@ td .btn-delete {
     flex-shrink: 0;
 }
 
-/* --- 打印样式 V6 (深度优化) --- */
+/* --- 打印样式 V8 (修复行高问题) --- */
 @media print {
-
-    body,
-    .app-container,
-    #product-select-modal,
-    .sidebar {
+    body>*:not(#print-preview-area) {
         display: none !important;
-        visibility: hidden !important;
+    }
+
+    body {
+        background-color: #fff !important;
     }
 
     #print-preview-area {
         display: block !important;
-        visibility: visible !important;
         position: absolute;
-        left: 0;
         top: 0;
+        left: 0;
         width: 100%;
     }
 
     @page {
         size: A4;
         margin: 0.8cm;
-
-        /* 减小页边距 */
-        /* 尝试移除浏览器默认页眉页脚 */
-        @top-left {
-            content: ""
-        }
-
-        @top-center {
-            content: ""
-        }
-
-        @top-right {
-            content: ""
-        }
-
-        @bottom-left {
-            content: ""
-        }
-
-        @bottom-center {
-            content: ""
-        }
-
-        @bottom-right {
-            content: ""
-        }
     }
 
     .print-container,
@@ -603,14 +575,13 @@ td .btn-delete {
         font-family: Arial, sans-serif !important;
         font-size: 9pt !important;
         color: #000 !important;
-        background-color: #fff !important;
+        background: transparent !important;
     }
 
     .print-container div,
     .print-container section,
     .print-container table {
         page-break-inside: avoid;
-        /* 防止元素内部被分页 */
     }
 
     .print-header {
@@ -619,14 +590,11 @@ td .btn-delete {
         align-items: flex-start !important;
         border-bottom: 2px solid #000 !important;
         padding-bottom: 5px !important;
-        /* 减小 */
         margin-bottom: 5px !important;
-        /* 减小 */
     }
 
     .print-header .seller-info h1 {
         font-size: 13pt !important;
-        /* 减小 */
         margin-bottom: 1px !important;
     }
 
@@ -638,7 +606,6 @@ td .btn-delete {
 
     .print-header .doc-title h2 {
         font-size: 15pt !important;
-        /* 减小 */
         text-align: right !important;
         margin: 0 !important;
     }
@@ -646,9 +613,7 @@ td .btn-delete {
     .print-header .doc-title img {
         max-width: 140px !important;
         max-height: 45px !important;
-        /* 减小 */
         margin-bottom: 4px !important;
-        /* 减小 */
         display: block !important;
         margin-left: auto !important;
     }
@@ -657,9 +622,7 @@ td .btn-delete {
         display: flex !important;
         justify-content: space-between !important;
         margin-bottom: 6px !important;
-        /* 减小 */
         padding: 4px !important;
-        /* 减小 */
         border: 1px solid #999 !important;
     }
 
@@ -676,9 +639,7 @@ td .btn-delete {
 
     .print-meta p {
         font-size: 8.5pt !important;
-        /* 减小 */
         line-height: 1.25 !important;
-        /* 减小 */
         margin: 1px 0 !important;
     }
 
@@ -686,7 +647,6 @@ td .btn-delete {
         width: 100% !important;
         border-collapse: collapse !important;
         margin-bottom: 8px !important;
-        /* 减小 */
     }
 
     .print-table thead {
@@ -696,18 +656,16 @@ td .btn-delete {
     .print-table th,
     .print-table td {
         border: 1px solid #333 !important;
-        padding: 3px !important;
-        /* 减小 */
+        padding: 4px !important;
         text-align: center !important;
-        vertical-align: middle !important;
-        word-break: break-all;
+        vertical-align: top !important;
+        /* <<< KEY CHANGE: Top align content */
     }
 
     .print-table th {
         background-color: #333 !important;
         color: #fff !important;
         font-size: 8pt !important;
-        /* 减小 */
         font-weight: bold !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -715,23 +673,15 @@ td .btn-delete {
 
     .print-table .desc {
         text-align: left !important;
-        white-space: pre-wrap !important;
+        white-space: normal !important;
         word-break: break-word !important;
-    }
-
-    .print-table .desc p {
-        margin: 0 !important;
-        font-size: 8pt !important;
-        /* 减小 */
-        line-height: 1.15 !important;
-        /* 减小 */
+        line-height: 1.3 !important;
+        /* <<< KEY CHANGE: Adjust line height */
     }
 
     .print-table img {
-        max-width: 40px !important;
-        /* 减小 */
-        max-height: 40px !important;
-        /* 减小 */
+        max-width: 45px !important;
+        max-height: 45px !important;
         vertical-align: middle !important;
     }
 
@@ -739,7 +689,6 @@ td .btn-delete {
         width: 45% !important;
         margin-left: auto !important;
         margin-bottom: 8px !important;
-        /* 减小 */
         font-size: 9pt !important;
     }
 
@@ -751,7 +700,6 @@ td .btn-delete {
         padding: 3px 6px !important;
     }
 
-    /* 减小 */
     .print-summary .grand-total {
         font-weight: bold !important;
         font-size: 10pt !important;
@@ -760,7 +708,6 @@ td .btn-delete {
 
     .print-terms {
         margin-bottom: 8px !important;
-        /* 减小 */
         white-space: pre-wrap !important;
         font-size: 8pt !important;
     }
@@ -774,9 +721,7 @@ td .btn-delete {
 
     .print-footer {
         margin-top: 15px !important;
-        /* 减小 */
         padding-top: 5px !important;
-        /* 减小 */
         border-top: 1px solid #333 !important;
         display: flex !important;
         justify-content: space-between !important;

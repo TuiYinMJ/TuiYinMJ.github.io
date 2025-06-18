@@ -3,407 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>专业外贸PI和报价单生成系统</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <title>外贸业务员 PI & 报价单生成器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">专业外贸PI和报价单生成系统</h1>
-        
-        <!-- 模板管理 -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3>模板管理</h3>
-                <div>
-                    <button class="btn btn-outline-primary" id="saveTemplate">
-                        <i class="bi bi-save"></i> 保存为模板
-                    </button>
-                    <button class="btn btn-outline-secondary" id="loadTemplate">
-                        <i class="bi bi-folder"></i> 加载模板
-                    </button>
+
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>业务助手</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#" class="nav-link active" data-target="dashboard">主面板</a></li>
+                <li><a href="#" class="nav-link" data-target="pi-generator">生成PI/报价单</a></li>
+                <li><a href="#" class="nav-link" data-target="product-manager">商品管理</a></li>
+                <li><a href="#" class="nav-link" data-target="settings-manager">后台设置</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <button id="export-data-btn">导出数据 (备份)</button>
+            <label for="import-data-input" class="import-data-label">导入数据 (恢复)</label>
+            <input type="file" id="import-data-input" accept=".json">
+            <p class="version">Version 5.0.0</p>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div id="dashboard" class="module active">
+            <h1>欢迎使用外贸业务助手 V5.0</h1>
+            <p>此版本为重大优化更新，专注于打印效果和核心用户体验。</p>
+            <h3>V5 更新日志:</h3>
+            <ol>
+                <li><strong>【打印优化】</strong> 彻底重写打印样式，布局更紧凑专业，优先在一页内展示。</li>
+                <li><strong>【功能增强】</strong> 单据号(Doc ID)旁增加刷新按钮，可随时生成新号码。</li>
+                <li><strong>【内容增强】</strong> 新增“备注”字段；并确保PI单据必定会显示银行信息。</li>
+                <li><strong>【UX 优化】</strong> “有效期”、“重量”等输入框增加固定单位，用户只需填数字。</li>
+                <li><strong>【UI 优化】</strong> “从商品库添加”按钮已美化。</li>
+            </ol>
+        </div>
+
+        <div id="pi-generator" class="module">
+            <h2>生成PI/报价单</h2>
+            <form id="pi-form">
+                <div class="form-grid">
+                    <fieldset>
+                        <legend>单据核心信息</legend>
+                         <select id="doc-type"><option value="QUOTATION">报价单 (QUOTATION)</option><option value="PROFORMA INVOICE">形式发票 (PROFORMA INVOICE)</option></select>
+                        <select id="doc-currency"></select>
+                        <input type="text" id="doc-incoterms" placeholder="贸易术语 (如: FOB Shanghai)" required>
+                    </fieldset>
+                    <fieldset>
+                        <legend>客户信息</legend>
+                        <input type="text" id="buyer-name" placeholder="客户公司名称" required>
+                        <textarea id="buyer-address" placeholder="客户公司地址" required></textarea>
+                        <input type="text" id="buyer-attn" placeholder="联系人 (Attn)" required>
+                    </fieldset>
+                    <fieldset>
+                        <legend>我方与单据信息</legend>
+                        <input type="text" id="doc-prepared-by" placeholder="制单人 (Prepared by)">
+                        <div class="input-with-addon">
+                            <input type="text" id="doc-id" placeholder="单据号">
+                            <button type="button" id="generate-doc-id-btn" class="addon-btn" title="生成新单据号">&#x21bb;</button>
+                        </div>
+                        <div class="input-group">
+                            <input type="number" id="doc-validity" placeholder="例如: 30">
+                            <span class="input-group-text">Days</span>
+                        </div>
+                        <input type="date" id="doc-date" required>
+                    </fieldset>
                 </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="templateName" class="form-label">模板名称:</label>
-                            <input type="text" class="form-control" id="templateName">
+
+                <h3>商品列表 (<span id="quote-currency-label">USD</span>)</h3>
+                <table id="quote-product-table">
+                    <thead><tr><th style="width: 80px;">图片</th><th>商品描述</th><th style="width: 100px;">数量</th><th style="width: 80px;">单位</th><th style="width: 120px;">单价</th><th style="width: 150px;">金额</th><th style="width: 60px;">操作</th></tr></thead>
+                    <tbody id="quote-product-list"></tbody>
+                </table>
+                <button type="button" id="show-product-modal-btn" class="btn-primary">从商品库添加</button>
+
+                <div class="form-grid-large-col">
+                    <fieldset>
+                        <legend>价格与条款</legend>
+                        <div class="form-grid">
+                            <div>
+                                <label for="port-loading">装运港</label><input type="text" id="port-loading">
+                                <label for="port-destination">目的港</label><input type="text" id="port-destination">
+                                <label for="payment-terms">付款方式</label><textarea id="payment-terms" rows="2"></textarea>
+                                <label for="lead-time">交货期</label><textarea id="lead-time" rows="2"></textarea>
+                            </div>
+                            <div class="totals-and-remarks">
+                                <div class="total-row"><label>商品总计:</label><span id="subtotal">0.00</span></div>
+                                <div class="total-row"><label for="freight-cost">运费:</label><input type="number" id="freight-cost" value="0" step="0.01"></div>
+                                <div class="total-row"><label for="insurance-cost">保险:</label><input type="number" id="insurance-cost" value="0" step="0.01"></div>
+                                <div class="total-row total-grand"><label>最终总计:</label><span id="grand-total">0.00</span></div>
+                                <label for="doc-remarks">备注</label><textarea id="doc-remarks" rows="2"></textarea>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="templateType" class="form-label">模板类型:</label>
-                            <select class="form-select" id="templateType">
-                                <option value="PI">形式发票模板</option>
-                                <option value="QUOTATION">报价单模板</option>
-                            </select>
+                    </fieldset>
+                </div>
+                
+                <div class="form-actions"><button type="submit" class="btn-primary">生成预览 & 打印</button><button type="reset" class="btn-secondary">重置表单</button></div>
+            </form>
+        </div>
+
+        <div id="product-manager" class="module">
+            <h2>商品管理</h2>
+            <div class="manager-container">
+                <div class="form-section">
+                    <h3>新增 / 编辑商品</h3>
+                    <form id="product-form">
+                        <input type="hidden" id="product-id">
+                        <input type="text" id="product-model" placeholder="产品型号 (唯一)" required>
+                        <input type="text" id="product-name" placeholder="产品名称" required>
+                        <textarea id="product-specs" placeholder="产品规格" rows="3"></textarea>
+                        <div class="image-source-selector"><label>图片来源:</label><label class="radio-label"><input type="radio" name="image-source" value="local" checked> 本地上传</label><label class="radio-label"><input type="radio" name="image-source" value="url"> 图片URL</label></div>
+                        <div id="image-source-local"><label for="product-image-input" class="file-label">选择文件</label><input type="file" id="product-image-input" accept="image/*"><img id="product-image-preview" src="#" alt="图片预览"></div>
+                        <div id="image-source-url" style="display: none;"><input type="text" id="product-image-url" placeholder="粘贴远程图片URL"></div>
+                        <input type="hidden" id="product-image-storage">
+                        <div class="form-grid-col2"><input type="text" id="product-unit" placeholder="单位 (e.g., PCS)" required><input type="text" id="product-hs-code" placeholder="HS Code (海关编码)"></div>
+                        <textarea id="product-packaging" placeholder="包装信息 (如: 10pcs/carton)" rows="2"></textarea>
+                        <div class="form-grid-col2">
+                            <div class="input-group"><input type="number" id="product-net-weight" placeholder="净重"><span class="input-group-text">KGS</span></div>
+                            <div class="input-group"><input type="number" id="product-gross-weight" placeholder="毛重"><span class="input-group-text">KGS</span></div>
                         </div>
-                    </div>
+                        <fieldset>
+                            <legend>价格计算</legend>
+                            <label>成本价 (<span id="cost-currency-label">CNY</span>):</label><input type="number" id="product-cost" required step="0.01">
+                            <div class="image-source-selector"><label>利润算法:</label><label class="radio-label"><input type="radio" name="profit-algo" value="cost_plus" checked> 加成法</label><label class="radio-label"><input type="radio" name="profit-algo" value="margin"> 毛利法</label></div>
+                            <input type="number" id="product-margin" placeholder="利润率 (%)" required step="0.01">
+                            <div id="product-prices-display"></div>
+                        </fieldset>
+                        <div class="form-actions"><button type="submit" class="btn-primary">保存商品</button><button type="button" id="clear-product-form-btn" class="btn-secondary">清空表单</button></div>
+                    </form>
+                </div>
+                <div class="list-section">
+                    <h3>我的商品库</h3>
+                    <table id="product-list-table"><thead><tr><th>型号</th><th>名称</th><th>操作</th></tr></thead><tbody id="product-list-body"></tbody></table>
                 </div>
             </div>
         </div>
 
-        <form id="quoteForm" class="needs-validation" novalidate>
-            <!-- 文档类型选择 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>文档信息</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="documentType" class="form-label">文档类型:</label>
-                                <select class="form-select" id="documentType" required>
-                                    <option value="PI">形式发票 (Proforma Invoice)</option>
-                                    <option value="QUOTATION">报价单 (Quotation)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="invoiceNo" class="form-label">单据编号:</label>
-                                <input type="text" class="form-control" id="invoiceNo" required>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="invoiceDate" class="form-label">单据日期:</label>
-                                <input type="date" class="form-control" id="invoiceDate" required>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label for="validUntil" class="form-label">有效期至:</label>
-                                <input type="date" class="form-control" id="validUntil" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div id="settings-manager" class="module">
+            <h2>后台设置</h2>
+            <form id="settings-form">
+                <fieldset>
+                    <legend>我方公司信息</legend>
+                    <input type="text" id="setting-company-name" placeholder="公司全称" required>
+                    <textarea id="setting-company-address" placeholder="公司地址" required></textarea>
+                    <input type="text" id="setting-company-contact" placeholder="电话, 邮箱等联系方式" required>
+                    <div class="image-source-selector"><label>Logo来源:</label><label class="radio-label"><input type="radio" name="logo-source" value="local" checked> 本地上传</label><label class="radio-label"><input type="radio" name="logo-source" value="url"> 图片URL</label></div>
+                    <div id="logo-source-local"><label for="setting-company-logo-input" class="file-label">选择文件</label><input type="file" id="setting-company-logo-input" accept="image/*"><img id="setting-company-logo-preview" src="#" alt="Logo 预览"></div>
+                    <div id="logo-source-url" style="display: none;"><input type="text" id="setting-company-logo-url" placeholder="粘贴远程Logo图片URL"></div>
+                    <input type="hidden" id="setting-company-logo-storage">
+                </fieldset>
+                <fieldset>
+                    <legend>财务与币种</legend>
+                    <textarea id="setting-bank-info" placeholder="必填项(形式发票PI): 银行名称, SWIFT, 账号等..." rows="4"></textarea>
+                    <label for="setting-base-currency">成本基准货币 (如: CNY)</label><input type="text" id="setting-base-currency" value="CNY" required>
+                    <label for="setting-target-currencies">销售币种与汇率 (每行一个, 格式: USD:7.25)</label><textarea id="setting-target-currencies" rows="4" placeholder="USD:7.25&#10;EUR:8.00&#10;JPY:0.05"></textarea>
+                </fieldset>
+                <fieldset>
+                    <legend>默认条款</legend>
+                    <input type="text" id="setting-default-port-loading" placeholder="默认装运港 (如: Shanghai, China)">
+                    <input type="text" id="setting-default-incoterms" placeholder="默认贸易术语 (如: FOB Shanghai)">
+                    <input type="text" id="setting-default-validity" placeholder="默认有效期 (如: 30)">
+                    <textarea id="setting-default-payment" placeholder="默认付款方式" rows="3"></textarea>
+                    <textarea id="setting-default-leadtime" placeholder="默认交货期" rows="2"></textarea>
+                </fieldset>
+                <button type="submit" class="btn-primary">保存设置</button>
+            </form>
+        </div>
+    </main>
+</div>
 
-            <!-- 卖方信息 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>卖方信息</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="companyLogo" class="form-label">公司Logo URL:</label>
-                                <input type="url" class="form-control" id="companyLogo">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="companyName" class="form-label">公司名称:</label>
-                                <input type="text" class="form-control" id="companyName" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="mb-3">
-                                <label for="companyAddress" class="form-label">公司地址:</label>
-                                <textarea class="form-control" id="companyAddress" rows="2" required></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="companyContact" class="form-label">联系人:</label>
-                                <input type="text" class="form-control" id="companyContact" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="companyPhone" class="form-label">电话:</label>
-                                <input type="tel" class="form-control" id="companyPhone" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="companyEmail" class="form-label">邮箱:</label>
-                                <input type="email" class="form-control" id="companyEmail" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="bankName" class="form-label">银行名称:</label>
-                                <input type="text" class="form-control" id="bankName" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="swiftCode" class="form-label">SWIFT代码:</label>
-                                <input type="text" class="form-control" id="swiftCode" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="mb-3">
-                                <label for="bankAccount" class="form-label">银行账号:</label>
-                                <input type="text" class="form-control" id="bankAccount" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 买方信息 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>买方信息</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="clientName" class="form-label">客户名称:</label>
-                                <input type="text" class="form-control" id="clientName" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="clientContact" class="form-label">联系人:</label>
-                                <input type="text" class="form-control" id="clientContact" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="mb-3">
-                                <label for="clientAddress" class="form-label">客户地址:</label>
-                                <textarea class="form-control" id="clientAddress" rows="2" required></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="clientPhone" class="form-label">电话:</label>
-                                <input type="tel" class="form-control" id="clientPhone" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="clientEmail" class="form-label">邮箱:</label>
-                                <input type="email" class="form-control" id="clientEmail" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="clientFax" class="form-label">传真:</label>
-                                <input type="text" class="form-control" id="clientFax">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 商品列表 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>商品列表</h3>
-                </div>
-                <div class="card-body">
-                    <div id="productRows">
-                        <div class="product-row row mb-3">
-                            <div class="col-md-3">
-                                <input type="text" class="form-control" placeholder="商品名称" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="text" class="form-control" placeholder="规格型号">
-                            </div>
-                            <div class="col-md-1">
-                                <input type="text" class="form-control" placeholder="单位">
-                            </div>
-                            <div class="col-md-1">
-                                <input type="number" class="form-control" placeholder="数量" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="number" step="0.01" class="form-control" placeholder="单价" required>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="text" class="form-control" placeholder="HS编码">
-                            </div>
-                            <div class="col-md-1">
-                                <button type="button" class="btn btn-danger remove-btn">×</button>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-primary" id="addProduct">+ 添加商品</button>
-                </div>
-            </div>
-
-            <!-- 交易条款 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>交易条款</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="paymentTerms" class="form-label">付款方式:</label>
-                                <select class="form-select" id="paymentTerms" required>
-                                    <option value="T/T">电汇(T/T)</option>
-                                    <option value="L/C">信用证(L/C)</option>
-                                    <option value="DP">付款交单(DP)</option>
-                                    <option value="CAD">货到付款(CAD)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="deliveryTerms" class="form-label">交货条款:</label>
-                                <select class="form-select" id="deliveryTerms" required>
-                                    <option value="FOB">FOB</option>
-                                    <option value="CIF">CIF</option>
-                                    <option value="CFR">CFR</option>
-                                    <option value="EXW">EXW</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="deliveryDate" class="form-label">交货时间:</label>
-                                <input type="date" class="form-control" id="deliveryDate" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="portOfLoading" class="form-label">装运港:</label>
-                                <input type="text" class="form-control" id="portOfLoading" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="portOfDestination" class="form-label">目的港:</label>
-                                <input type="text" class="form-control" id="portOfDestination" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="transportMode" class="form-label">运输方式:</label>
-                                <select class="form-select" id="transportMode" required>
-                                    <option value="SEA">海运</option>
-                                    <option value="AIR">空运</option>
-                                    <option value="LAND">陆运</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="advancePayment" class="form-label">预付款比例:</label>
-                                <input type="number" class="form-control" id="advancePayment" min="0" max="100" value="30">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="moq" class="form-label">最小起订量:</label>
-                                <input type="number" class="form-control" id="moq" min="1">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 包装信息 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>包装信息</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="packageType" class="form-label">包装类型:</label>
-                                <select class="form-select" id="packageType">
-                                    <option value="CARTON">纸箱</option>
-                                    <option value="WOODEN">木箱</option>
-                                    <option value="PALLET">托盘</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="packageSize" class="form-label">包装尺寸:</label>
-                                <input type="text" class="form-control" id="packageSize" placeholder="长x宽x高(cm)">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="packageWeight" class="form-label">包装重量:</label>
-                                <input type="number" class="form-control" id="packageWeight" placeholder="kg">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 其他信息 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>其他信息</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="mb-3">
-                                <label for="remarks" class="form-label">备注:</label>
-                                <textarea class="form-control" id="remarks" rows="3"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="mb-3">
-                                <label for="terms" class="form-label">条款和条件:</label>
-                                <textarea class="form-control" id="terms" rows="3"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 打印选项 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>打印选项</h3>
-                </div>
-                <div class="card-body">
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="fitToPage">
-                        <label class="form-check-label" for="fitToPage">
-                            适应单页打印
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-center mb-4">
-                <button type="submit" class="btn btn-primary btn-lg">生成文档</button>
-                <button type="button" class="btn btn-secondary btn-lg ms-2" id="previewBtn">预览</button>
-            </div>
-        </form>
-        <div id="result"></div>
+<div id="product-select-modal" class="modal">
+    <div class="modal-content"><span class="close-modal-btn">&times;</span><h2>选择商品</h2><input type="text" id="modal-search-input" placeholder="按型号或名称搜索...">
+        <table class="modal-table"><thead><tr><th>图片</th><th>型号</th><th>名称</th><th>操作</th></tr></thead><tbody id="modal-product-list"></tbody></table>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="script.js"></script>
+<div id="print-preview-area"></div>
+
+<script src="app.js"></script>
 </body>
 </html>

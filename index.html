@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>外贸业务与CRM助手</title>
+    <title>外贸业务与CRM助手 (专业增强版)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- 引入 SheetJS 库用于生成 Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 
 <body>
@@ -18,7 +18,7 @@
     <div class="app-container">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h2>业务助手</h2>
+                <h2>业务助手 Pro</h2>
             </div>
             <nav class="sidebar-nav">
                 <ul>
@@ -30,10 +30,13 @@
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <button id="export-data-btn">导出全部数据</button>
-                <label for="import-data-input" class="import-data-label">导入全部数据</label>
+                <button id="export-data-btn">导出全部数据 (备份)</button>
+                <label for="import-data-input" class="import-data-label">导入备份数据</label>
                 <input type="file" id="import-data-input" accept=".json">
-                <p class="version">Version 13.0.0</p>
+                <div class="data-warning">
+                    <p>⚠️ 数据存储于本地浏览器，请定期导出备份，以防数据丢失！</p>
+                </div>
+                <p class="version">Version 13.1.0 (专业增强版)</p>
             </div>
         </aside>
 
@@ -44,22 +47,32 @@
                     <div class="dashboard-widget">
                         <h3>今日待办 (Next Actions)</h3>
                         <div id="today-tasks-container">
-                            <!-- Tasks will be dynamically inserted here -->
+                        </div>
+                    </div>
+                    <div class="dashboard-widget" id="analytics-widget">
+                        <h3>客户漏斗分析</h3>
+                        <div class="chart-container">
+                            <canvas id="customer-status-chart"></canvas>
                         </div>
                     </div>
                     <div class="dashboard-widget">
-                        <h3>V13.0 更新日志</h3>
+                        <h3>V13.1 更新日志</h3>
                         <ol>
-                            <li><strong>【CRM重构】</strong> 引入客户状态、跟进计划、单据关联等专业功能。</li>
-                            <li><strong>【智能提醒】</strong> 主面板新增“今日待办”模块，自动提醒跟进任务。</li>
-                            <li><strong>【独立导入导出】</strong> CRM模块现支持独立、专业的多页Excel导入导出。</li>
-                            <li><strong>【体验优化】</strong> 可在CRM中为客户“一键新建报价”。</li>
+                            <li><strong>【致命修复】</strong> 解决了模态框(对话框)在内部点击时意外关闭导致数据丢失的问题。</li>
+                            <li><strong>【导出升级】</strong> 重构PI/报价单导出功能：
+                                <ul>
+                                    <li>打印预览采用更专业、清晰的A4布局。</li>
+                                    <li>Excel导出升级为原生XLSX格式，结构清晰，不再乱码。</li>
+                                </ul>
+                            </li>
+                            <li><strong>【仪表盘增强】</strong> 主面板新增“客户漏斗分析”图表，业务状态一目了然。</li>
+                            <li><strong>【安全提示】</strong> 增加了数据本地存储的风险提示，并强化备份按钮。</li>
+                            <li><strong>【体验优化】</strong> 全面优化了UI细节和操作反馈，提升专业感。</li>
                         </ol>
                     </div>
                 </div>
             </div>
 
-            <!-- CRM Module Start -->
             <div id="crm-manager" class="module">
                 <h2>客户管理 (CRM)</h2>
                 <div class="toolbar">
@@ -104,8 +117,6 @@
                     <tbody id="customer-list-body"></tbody>
                 </table>
             </div>
-            <!-- CRM Module End -->
-
             <div id="pi-generator" class="module">
                 <h2>生成PI/报价单</h2>
                 <form id="pi-form">
@@ -129,7 +140,7 @@
                                 <button type="button" id="clear-customer-link" class="addon-btn" title="清除关联">✖</button>
                             </div>
                             <input type="text" id="buyer-name" placeholder="客户公司名称" required>
-                            <textarea id="buyer-address" placeholder="客户公司地址" required></textarea>
+                            <textarea id="buyer-address" placeholder="客户公司地址" rows="2" required></textarea>
                             <input type="text" id="buyer-attn" placeholder="联系人 (Attn), 可留空">
                         </fieldset>
                         <fieldset>
@@ -141,8 +152,8 @@
                                     title="生成新单据号">&#x21bb;</button>
                             </div>
                             <div class="input-group">
-                                <input type="number" id="doc-validity" placeholder="例如: 30">
-                                <span class="input-group-text">Days</span>
+                                <input type="number" id="doc-validity" placeholder="例如: 30" value="30">
+                                <span class="addon-btn">Days</span>
                             </div>
                             <input type="date" id="doc-date" required>
                         </fieldset>
@@ -165,30 +176,32 @@
                     </table>
                     <button type="button" id="show-product-modal-btn" class="btn-primary">从商品库添加</button>
 
-                    <div class="form-grid-large-col">
+                    <div class="form-grid-large-col" style="margin-top: 20px;">
                         <fieldset>
-                            <legend>价格与条款</legend>
-                            <div class="form-grid">
-                                <div>
-                                    <label for="port-loading">装运港</label><input type="text" id="port-loading"
-                                        placeholder="可留空">
-                                    <label for="port-destination">目的港</label><input type="text" id="port-destination"
-                                        placeholder="可留空">
-                                    <label for="payment-terms">付款方式</label><textarea id="payment-terms"
-                                        rows="2"></textarea>
-                                    <label for="lead-time">交货期</label><textarea id="lead-time" rows="2"></textarea>
-                                </div>
-                                <div class="totals-and-remarks">
-                                    <div class="total-row"><label>商品总计:</label><span id="subtotal">0.00</span></div>
-                                    <div class="total-row"><label for="freight-cost">运费:</label><input type="number"
-                                            id="freight-cost" value="0" step="0.01"></div>
-                                    <div class="total-row"><label for="insurance-cost">保险:</label><input type="number"
-                                            id="insurance-cost" value="0" step="0.01"></div>
-                                    <div class="total-row total-grand"><label>最终总计:</label><span
-                                            id="grand-total">0.00</span></div>
-                                    <label for="doc-remarks">备注</label><textarea id="doc-remarks" rows="2"
-                                        placeholder="可留空"></textarea>
-                                </div>
+                            <legend>条款与备注</legend>
+                            <div class="form-grid-col2">
+                                <div><label for="port-loading">装运港 (Port of Loading)</label><input type="text"
+                                        id="port-loading" placeholder="可留空"></div>
+                                <div><label for="port-destination">目的港 (Port of Destination)</label><input type="text"
+                                        id="port-destination" placeholder="可留空"></div>
+                            </div>
+                            <label for="payment-terms">付款方式 (Payment Terms)</label><textarea id="payment-terms"
+                                rows="3"></textarea>
+                            <label for="lead-time">交货期 (Lead Time)</label><textarea id="lead-time" rows="2"></textarea>
+                            <label for="doc-remarks">备注 (Remarks)</label><textarea id="doc-remarks" rows="2"
+                                placeholder="可留空"></textarea>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>费用总计</legend>
+                            <div class="totals-and-remarks">
+                                <div class="total-row"><label>商品总计:</label><span id="subtotal">0.00</span></div>
+                                <div class="total-row"><label for="freight-cost">运费:</label><input type="number"
+                                        id="freight-cost" value="0" step="0.01"></div>
+                                <div class="total-row"><label for="insurance-cost">保险:</label><input type="number"
+                                        id="insurance-cost" value="0" step="0.01"></div>
+                                <div class="total-row total-grand"><label>最终总计:</label><span
+                                        id="grand-total">0.00</span></div>
                             </div>
                         </fieldset>
                     </div>
@@ -210,7 +223,7 @@
                             <input type="hidden" id="product-id">
                             <input type="text" id="product-model" placeholder="产品型号 (唯一)" required>
                             <input type="text" id="product-name" placeholder="产品名称" required>
-                            <textarea id="product-specs" placeholder="产品规格 (可留空)" rows="3"></textarea>
+                            <textarea id="product-specs" placeholder="产品规格 (可换行，将在单据中显示)" rows="3"></textarea>
                             <div class="image-source-selector"><label>图片来源:</label><label class="radio-label"><input
                                         type="radio" name="image-source" value="local" checked> 本地上传</label><label
                                     class="radio-label"><input type="radio" name="image-source" value="url">
@@ -226,11 +239,11 @@
                                     placeholder="HS Code (可留空)"></div>
                             <textarea id="product-packaging" placeholder="包装信息 (可留空)" rows="2"></textarea>
                             <div class="form-grid-col2">
-                                <div class="input-group"><input type="number" id="product-net-weight"
-                                        placeholder="净重 (可留空)" step="0.01"><span class="input-group-text">KGS</span>
+                                <div class="input-group"><input type="number" id="product-net-weight" placeholder="净重"
+                                        step="0.01"><span class="addon-btn">KGS</span>
                                 </div>
-                                <div class="input-group"><input type="number" id="product-gross-weight"
-                                        placeholder="毛重 (可留空)" step="0.01"><span class="input-group-text">KGS</span>
+                                <div class="input-group"><input type="number" id="product-gross-weight" placeholder="毛重"
+                                        step="0.01"><span class="addon-btn">KGS</span>
                                 </div>
                             </div>
                             <fieldset>
@@ -270,7 +283,7 @@
                     <fieldset>
                         <legend>我方公司信息</legend>
                         <input type="text" id="setting-company-name" placeholder="公司全称" required>
-                        <textarea id="setting-company-address" placeholder="公司地址" required></textarea>
+                        <textarea id="setting-company-address" placeholder="公司地址" rows="2" required></textarea>
                         <input type="text" id="setting-company-contact" placeholder="电话, 邮箱等联系方式" required>
                         <div class="image-source-selector"><label>Logo来源:</label><label class="radio-label"><input
                                     type="radio" name="logo-source" value="local" checked> 本地上传</label><label
@@ -285,24 +298,23 @@
                     </fieldset>
                     <fieldset>
                         <legend>财务与币种</legend>
-                        <textarea id="setting-bank-info" placeholder="必填项(形式发票PI): 银行名称, SWIFT, 账号等..."
+                        <textarea id="setting-bank-info" placeholder="银行名称, SWIFT, 账号等收款信息... (在生成PI时会自动显示)"
                             rows="4"></textarea>
                         <label for="setting-base-currency">成本基准货币 (如: CNY)</label><input type="text"
                             id="setting-base-currency" value="CNY" required>
 
-                        <label>销售币种与汇率</label>
+                        <label>销售币种与汇率 (相对于基准货币)</label>
                         <div id="currency-pairs-container">
-                            <!-- Currency pairs will be dynamically inserted here by app.js -->
                         </div>
                         <button type="button" id="add-currency-btn" class="btn-secondary"
                             style="margin-top: -5px; padding: 8px 15px;">+ 添加币种</button>
 
                     </fieldset>
                     <fieldset>
-                        <legend>默认条款</legend>
+                        <legend>PI/报价单默认条款</legend>
                         <input type="text" id="setting-default-port-loading" placeholder="默认装运港 (如: Shanghai, China)">
                         <input type="text" id="setting-default-incoterms" placeholder="默认贸易术语 (如: FOB Shanghai)">
-                        <input type="text" id="setting-default-validity" placeholder="默认有效期 (如: 30)">
+                        <input type="number" id="setting-default-validity" placeholder="默认报价有效期天数 (如: 30)">
                         <textarea id="setting-default-payment" placeholder="默认付款方式" rows="3"></textarea>
                         <textarea id="setting-default-leadtime" placeholder="默认交货期" rows="2"></textarea>
                     </fieldset>
@@ -312,7 +324,6 @@
         </main>
     </div>
 
-    <!-- CRM Modal Start -->
     <div id="customer-modal" class="modal">
         <div class="modal-content large">
             <span class="close-modal-btn">&times;</span>
@@ -394,8 +405,6 @@
             </form>
         </div>
     </div>
-    <!-- CRM Modal End -->
-
     <div id="product-select-modal" class="modal">
         <div class="modal-content"><span class="close-modal-btn">&times;</span>
             <h2>选择商品</h2><input type="text" id="modal-search-input" placeholder="按型号或名称搜索...">

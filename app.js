@@ -1,15 +1,63 @@
 document.addEventListener("DOMContentLoaded", () => {
+	// --- Global State ---
 	let settings = {};
 	let products = [];
+	let customers = [];
 	let quoteItems = [];
 
+	// --- Utility Functions ---
 	const getEl = (id) => document.getElementById(id);
 	const query = (selector) => document.querySelector(selector);
 	const queryAll = (selector) => document.querySelectorAll(selector);
+	const saveData = (key, data) =>
+		localStorage.setItem(key, JSON.stringify(data));
+	const loadData = (key, def = null) => {
+		const data = localStorage.getItem(key);
+		return data ? JSON.parse(data) : def;
+	};
+	const handleImageUpload = (fileInput, previewEl, storageEl) => {
+		const file = fileInput.files[0];
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			previewEl.src = e.target.result;
+			previewEl.style.display = "block";
+			if (storageEl) storageEl.value = e.target.result;
+		};
+		reader.readAsDataURL(file);
+	};
 
 	// --- DOM CACHE ---
+	// General
 	const navLinks = queryAll(".nav-link");
 	const modules = queryAll(".module");
+	const exportBtn = getEl("export-data-btn");
+	const importInput = getEl("import-data-input");
+
+	// CRM
+	const crmSearchInput = getEl("crm-search-input");
+	const crmCountryFilter = getEl("crm-country-filter");
+	const crmRatingFilter = getEl("crm-rating-filter");
+	const customerListBody = getEl("customer-list-body");
+	const addNewCustomerBtn = getEl("add-new-customer-btn");
+	const customerModal = getEl("customer-modal");
+	const customerModalTitle = getEl("customer-modal-title");
+	const closeCustomerModalBtn = customerModal.querySelector(".close-modal-btn");
+	const customerForm = getEl("customer-form");
+	const customerIdInput = getEl("customer-id");
+	const customerNameInput = getEl("customer-name");
+	const customerCountryInput = getEl("customer-country");
+	const customerRatingInput = getEl("customer-rating");
+	const customerSourceInput = getEl("customer-source");
+	const customerWebsiteInput = getEl("customer-website");
+	const customerAddressInput = getEl("customer-address");
+	const contactsContainer = getEl("contacts-container");
+	const addContactBtn = getEl("add-contact-btn");
+	const followUpsContainer = getEl("follow-ups-container");
+	const addFollowUpBtn = getEl("add-follow-up-btn");
+	const deleteCustomerBtn = getEl("delete-customer-btn");
+
+	// PI Generator
 	const settingsForm = getEl("settings-form");
 	const companyNameInput = getEl("setting-company-name");
 	const companyAddressInput = getEl("setting-company-address");
@@ -77,43 +125,231 @@ document.addEventListener("DOMContentLoaded", () => {
 	const closeModalBtn = query(".close-modal-btn");
 	const modalProductList = getEl("modal-product-list");
 	const modalSearchInput = getEl("modal-search-input");
-	const exportBtn = getEl("export-data-btn");
 	const exportExcelBtn = getEl("export-excel-btn");
-	const importInput = getEl("import-data-input");
 	const buyerNameInput = getEl("buyer-name");
 	const buyerAddressInput = getEl("buyer-address");
 	const buyerAttnInput = getEl("buyer-attn");
 	const portDestinationInput = getEl("port-destination");
 
-	const saveData = (key, data) =>
-		localStorage.setItem(key, JSON.stringify(data));
-	const loadData = (key, def = null) => {
-		const data = localStorage.getItem(key);
-		return data ? JSON.parse(data) : def;
-	};
-	const handleImageUpload = (fileInput, previewEl, storageEl) => {
-		const file = fileInput.files[0];
-		if (!file) return;
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			previewEl.src = e.target.result;
-			previewEl.style.display = "block";
-			if (storageEl) storageEl.value = e.target.result;
-		};
-		reader.readAsDataURL(file);
+	// --- CRM Functions ---
+	const renderCustomerList = () => {
+		const searchTerm = crmSearchInput.value.toLowerCase();
+		const countryFilter = crmCountryFilter.value;
+		const ratingFilter = crmRatingFilter.value;
+
+		const filteredCustomers = customers.filter((c) => {
+			const nameMatch = c.name.toLowerCase().includes(searchTerm);
+			const countryMatch = !countryFilter || c.country === countryFilter;
+			const ratingMatch = !ratingFilter || c.rating == ratingFilter;
+			return nameMatch && countryMatch && ratingMatch;
+		});
+
+		customerListBody.innerHTML = "";
+		if (filteredCustomers.length === 0) {
+			customerListBody.innerHTML = `<tr><td colspan="5">没有找到匹配的客户</td></tr>`;
+			return;
+		}
+
+		filteredCustomers.forEach((c) => {
+			const lastFollowUp =
+				c.followUps.length > 0
+					? c.followUps[c.followUps.length - 1].date
+					: "无记录";
+			const tr = document.createElement("tr");
+			tr.innerHTML = `
+                <td>${c.name}</td>
+                <td>${c.country || "N/A"}</td>
+                <td class="star-rating">${"★".repeat(c.rating)}${"☆".repeat(
+				5 - c.rating
+			)}</td>
+                <td>${lastFollowUp}</td>
+                <td><button class="btn-action btn-edit" data-id="${
+									c.id
+								}">详情</button></td>
+            `;
+			customerListBody.appendChild(tr);
+		});
 	};
 
+	const populateCountryFilter = () => {
+		const countries = [
+			...new Set(customers.map((c) => c.country).filter(Boolean)),
+		];
+		crmCountryFilter.innerHTML = '<option value="">所有国家</option>';
+		countries.sort().forEach((country) => {
+			const option = document.createElement("option");
+			option.value = country;
+			option.textContent = country;
+			crmCountryFilter.appendChild(option);
+		});
+	};
+
+	const openCustomerModal = (customerId = null) => {
+		customerForm.reset();
+		customerIdInput.value = "";
+		contactsContainer.innerHTML = "";
+		followUpsContainer.innerHTML = "";
+
+		if (customerId) {
+			const customer = customers.find((c) => c.id === customerId);
+			if (!customer) return;
+			customerModalTitle.textContent = "编辑客户信息";
+			customerIdInput.value = customer.id;
+			customerNameInput.value = customer.name;
+			customerCountryInput.value = customer.country;
+			customerRatingInput.value = customer.rating;
+			customerSourceInput.value = customer.source;
+			customerWebsiteInput.value = customer.website;
+			customerAddressInput.value = customer.address;
+			customer.contacts.forEach(addContactRow);
+			customer.followUps.forEach(addFollowUpRow);
+			deleteCustomerBtn.style.display = "inline-block";
+		} else {
+			customerModalTitle.textContent = "新增客户";
+			addContactRow(); // Add one empty contact by default
+			addFollowUpRow(); // Add one empty follow-up by default
+			deleteCustomerBtn.style.display = "none";
+		}
+		customerModal.style.display = "block";
+	};
+
+	const addContactRow = (contact = {}) => {
+		const div = document.createElement("div");
+		div.className = "contact-card";
+		div.innerHTML = `
+            <button type="button" class="delete-item-btn">&times;</button>
+            <div class="form-grid-col3">
+                <input type="text" class="contact-name" placeholder="姓名" value="${
+									contact.name || ""
+								}">
+                <input type="text" class="contact-position" placeholder="职位" value="${
+									contact.position || ""
+								}">
+                <input type="email" class="contact-email" placeholder="邮箱" value="${
+									contact.email || ""
+								}">
+            </div>
+            <div class="form-grid-col2">
+                <input type="tel" class="contact-phone" placeholder="电话" value="${
+									contact.phone || ""
+								}">
+                <input type="text" class="contact-social" placeholder="社交账号 (e.g., WhatsApp)" value="${
+									contact.social || ""
+								}">
+            </div>
+        `;
+		contactsContainer.appendChild(div);
+		div
+			.querySelector(".delete-item-btn")
+			.addEventListener("click", () => div.remove());
+	};
+
+	const addFollowUpRow = (followUp = {}) => {
+		const div = document.createElement("div");
+		div.className = "follow-up-card";
+		div.innerHTML = `
+            <button type="button" class="delete-item-btn">&times;</button>
+            <div class="form-grid-col2">
+                <input type="date" class="follow-up-date" value="${
+									followUp.date || new Date().toISOString().slice(0, 10)
+								}">
+                <input type="text" class="follow-up-method" placeholder="方式 (e.g., Email, Phone)" value="${
+									followUp.method || ""
+								}">
+            </div>
+            <textarea class="follow-up-notes" placeholder="跟进内容纪要..." rows="3">${
+							followUp.notes || ""
+						}</textarea>
+        `;
+		followUpsContainer.appendChild(div);
+		div
+			.querySelector(".delete-item-btn")
+			.addEventListener("click", () => div.remove());
+	};
+
+	const handleCustomerFormSubmit = (e) => {
+		e.preventDefault();
+		const id = customerIdInput.value || Date.now().toString();
+
+		const contacts = [];
+		queryAll("#contacts-container .contact-card").forEach((card) => {
+			contacts.push({
+				name: card.querySelector(".contact-name").value.trim(),
+				position: card.querySelector(".contact-position").value.trim(),
+				email: card.querySelector(".contact-email").value.trim(),
+				phone: card.querySelector(".contact-phone").value.trim(),
+				social: card.querySelector(".contact-social").value.trim(),
+			});
+		});
+
+		const followUps = [];
+		queryAll("#follow-ups-container .follow-up-card").forEach((card) => {
+			followUps.push({
+				date: card.querySelector(".follow-up-date").value,
+				method: card.querySelector(".follow-up-method").value.trim(),
+				notes: card.querySelector(".follow-up-notes").value.trim(),
+			});
+		});
+		// Sort follow-ups by date, newest first
+		followUps.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+		const customerData = {
+			id,
+			name: customerNameInput.value.trim(),
+			country: customerCountryInput.value.trim(),
+			rating: parseInt(customerRatingInput.value, 10),
+			source: customerSourceInput.value.trim(),
+			website: customerWebsiteInput.value.trim(),
+			address: customerAddressInput.value.trim(),
+			contacts: contacts.filter((c) => c.name || c.email),
+			followUps: followUps.filter((f) => f.date || f.notes),
+		};
+
+		if (!customerData.name) {
+			alert("公司名称为必填项！");
+			return;
+		}
+
+		const existingIndex = customers.findIndex((c) => c.id === id);
+		if (existingIndex > -1) {
+			customers[existingIndex] = customerData;
+		} else {
+			customers.push(customerData);
+		}
+
+		saveData("customers", customers);
+		renderCustomerList();
+		populateCountryFilter();
+		customerModal.style.display = "none";
+	};
+
+	const handleDeleteCustomer = () => {
+		const id = customerIdInput.value;
+		if (
+			confirm(
+				`确定要删除客户 “${customerNameInput.value}” 吗？此操作不可撤销。`
+			)
+		) {
+			customers = customers.filter((c) => c.id !== id);
+			saveData("customers", customers);
+			renderCustomerList();
+			populateCountryFilter();
+			customerModal.style.display = "none";
+		}
+	};
+
+	// --- Core Functions ---
 	const addCurrencyRow = (currency = { code: "", rate: "" }) => {
 		const div = document.createElement("div");
 		div.className = "currency-pair";
 		div.innerHTML = `
             <input type="text" class="currency-code" placeholder="币种代码 (如: USD)" value="${currency.code}" style="flex: 1;">
             <input type="number" class="currency-rate" placeholder="对基准货币的汇率" value="${currency.rate}" style="flex: 2;" step="0.0001">
-            <button type="button" class="remove-currency-btn">&times;</button>
+            <button type="button" class="delete-item-btn">&times;</button>
         `;
 		currencyPairsContainer.appendChild(div);
 		div
-			.querySelector(".remove-currency-btn")
+			.querySelector(".delete-item-btn")
 			.addEventListener("click", () => div.remove());
 	};
 
@@ -159,7 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		products.forEach((p) => {
 			const tr = document.createElement("tr");
 			tr.dataset.id = p.id;
-			tr.innerHTML = `<td>${p.model}</td><td>${p.name}</td><td><button class="btn-action btn-edit">编辑</button><button class="btn-action btn-delete">删除</button></td>`;
+			tr.innerHTML = `<td>${p.model}</td><td>${p.name}</td><td><button class="btn-action btn-edit" data-id="${p.id}">编辑</button><button class="btn-action btn-delete-row" data-id="${p.id}">删除</button></td>`;
 			productListBody.appendChild(tr);
 		});
 	};
@@ -216,7 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="quote-item-amount">${(item.qty * price).toFixed(
 									2
 								)}</td>
-                <td><button class="btn-action btn-delete btn-delete-quote-item">删除</button></td>`;
+                <td><button class="btn-action btn-delete-row">&times;</button></td>`;
 			quoteProductList.appendChild(tr);
 		});
 		updateTotals();
@@ -312,6 +548,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			portLoadingInput.value = s.defaultPortLoading || "";
 			docValidityInput.value = s.defaultValidity || "30";
 			docPreparedByInput.value = s.preparedBy || "";
+		} else if (targetId === "crm-manager") {
+			renderCustomerList();
+			populateCountryFilter();
 		}
 	};
 
@@ -400,16 +639,12 @@ document.addEventListener("DOMContentLoaded", () => {
 	const handleProductListClick = (e) => {
 		const button = e.target.closest("button.btn-action");
 		if (!button) return;
-		const tr = button.closest("tr");
-		if (!tr || !tr.dataset.id) return;
-		const id = tr.dataset.id;
-		const product = products.find((p) => p.id === id);
-		if (!product) {
-			console.error("Data inconsistency error.", id);
-			alert("出现数据错误，请刷新页面。");
-			return;
-		}
+		const id = button.dataset.id;
+		if (!id) return;
+
 		if (button.classList.contains("btn-edit")) {
+			const product = products.find((p) => p.id === id);
+			if (!product) return;
 			productIdInput.value = product.id;
 			productModelInput.value = product.model;
 			productNameInput.value = product.name;
@@ -435,8 +670,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			productCostInput.value = "";
 			productMarginInput.value = "";
 			productPricesDisplay.innerHTML = "请重新输入成本和利润率以更新价格。";
-		} else if (button.classList.contains("btn-delete")) {
-			if (confirm(`确定要删除型号为 ${product.model} 的商品吗？`)) {
+		} else if (button.classList.contains("btn-delete-row")) {
+			if (confirm(`确定要删除此商品吗？`)) {
 				products = products.filter((p) => p.id !== id);
 				saveData("products", products);
 				renderProducts();
@@ -444,7 +679,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	};
 
-	// --- UPDATED to hide empty fields ---
 	const handlePiFormSubmit = (e) => {
 		e.preventDefault();
 		const currency = docCurrencySelect.value;
@@ -466,7 +700,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			: "";
 		const preparedByHTML = docPreparedByInput.value.trim()
 			? `<p>Prepared by: ${docPreparedByInput.value}</p>`
-			: "";
+			: "<p></p>";
 
 		getEl("print-preview-area").innerHTML = `
             <div class="print-container">
@@ -614,7 +848,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const handleQuoteListUpdate = (e) => {
 		const row = e.target.closest("tr");
 		if (!row) return;
-		if (e.target.classList.contains("btn-delete-quote-item")) {
+		if (e.target.classList.contains("btn-delete-row")) {
 			const index = parseInt(row.dataset.index, 10);
 			quoteItems.splice(index, 1);
 			renderQuoteItems();
@@ -629,7 +863,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	};
 
-	// --- COMPLETELY REWRITTEN to export HTML to Excel with images and styles ---
 	const handleExportToExcel = () => {
 		exportExcelBtn.textContent = "正在生成...";
 		exportExcelBtn.disabled = true;
@@ -846,18 +1079,83 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	function init() {
+		// Load all data
 		settings = loadData("settings", {});
 		products = loadData("products", []);
+		customers = loadData("customers", []);
 
+		// Initial render
 		renderSettings();
 		renderProducts();
+		renderCustomerList();
+		populateCountryFilter();
 
+		// General Event Listeners
 		navLinks.forEach((link) => link.addEventListener("click", handleNavClick));
+		exportBtn.addEventListener("click", () => {
+			const data = JSON.stringify({ settings, products, customers }, null, 2);
+			const blob = new Blob([data], { type: "application/json" });
+			const a = document.createElement("a");
+			a.href = URL.createObjectURL(blob);
+			a.download = `trade_helper_backup_${new Date()
+				.toISOString()
+				.slice(0, 10)}.json`;
+			a.click();
+			URL.revokeObjectURL(a.href);
+		});
+		importInput.addEventListener("change", (e) => {
+			const file = e.target.files[0];
+			if (
+				file &&
+				confirm(
+					"导入数据将覆盖现有所有数据（包括设置、商品和客户），确定继续吗？"
+				)
+			) {
+				const reader = new FileReader();
+				reader.onload = (event) => {
+					try {
+						const data = JSON.parse(event.target.result);
+						if (data.settings && data.products && data.customers) {
+							saveData("settings", data.settings);
+							saveData("products", data.products);
+							saveData("customers", data.customers);
+							alert("数据导入成功！页面将重新加载。");
+							window.location.reload();
+						} else {
+							alert("文件格式不正确！缺少必要数据。");
+						}
+					} catch (err) {
+						alert("导入失败，文件可能已损坏。");
+						console.error(err);
+					}
+				};
+				reader.readAsText(file);
+			}
+			e.target.value = "";
+		});
 
+		// CRM Event Listeners
+		addNewCustomerBtn.addEventListener("click", () => openCustomerModal());
+		customerListBody.addEventListener("click", (e) => {
+			if (e.target.classList.contains("btn-edit")) {
+				openCustomerModal(e.target.dataset.id);
+			}
+		});
+		[crmSearchInput, crmCountryFilter, crmRatingFilter].forEach((el) => {
+			el.addEventListener("input", renderCustomerList);
+		});
+		closeCustomerModalBtn.addEventListener(
+			"click",
+			() => (customerModal.style.display = "none")
+		);
+		addContactBtn.addEventListener("click", () => addContactRow());
+		addFollowUpBtn.addEventListener("click", () => addFollowUpRow());
+		customerForm.addEventListener("submit", handleCustomerFormSubmit);
+		deleteCustomerBtn.addEventListener("click", handleDeleteCustomer);
+
+		// Settings Event Listeners
 		settingsForm.addEventListener("submit", handleSettingsSave);
-
 		addCurrencyBtn.addEventListener("click", () => addCurrencyRow());
-
 		const setupImageSourceToggle = (radioName, localDivId, urlDivId) => {
 			queryAll(`input[name="${radioName}"]`).forEach((r) =>
 				r.addEventListener("change", (e) => {
@@ -877,7 +1175,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			"image-source-local",
 			"image-source-url"
 		);
-
 		companyLogoInput.addEventListener("change", () =>
 			handleImageUpload(
 				companyLogoInput,
@@ -885,6 +1182,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				companyLogoStorage
 			)
 		);
+
+		// Product Event Listeners
 		productImageInput.addEventListener("change", () =>
 			handleImageUpload(
 				productImageInput,
@@ -892,7 +1191,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				productImageStorage
 			)
 		);
-
 		productForm.addEventListener("submit", handleProductSave);
 		[
 			productCostInput,
@@ -908,34 +1206,33 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 		productListBody.addEventListener("click", handleProductListClick);
 
+		// PI Event Listeners
 		piForm.addEventListener("submit", handlePiFormSubmit);
 		piForm.addEventListener("reset", () => {
 			quoteItems = [];
 			renderQuoteItems();
 		});
-
 		generateDocIdBtn.addEventListener("click", generateDocId);
 		docCurrencySelect.addEventListener("change", () => {
 			quoteCurrencyLabel.textContent = docCurrencySelect.value;
 			renderQuoteItems();
 		});
-
-		// Add event listener for the new Excel button
 		exportExcelBtn.addEventListener("click", handleExportToExcel);
-
 		showProductModalBtn.addEventListener("click", () => {
 			renderModalProducts();
 			productSelectModal.style.display = "block";
 		});
-		closeModalBtn.addEventListener(
-			"click",
-			() => (productSelectModal.style.display = "none")
-		);
+		productSelectModal
+			.querySelector(".close-modal-btn")
+			.addEventListener(
+				"click",
+				() => (productSelectModal.style.display = "none")
+			);
 		window.addEventListener("click", (e) => {
 			if (e.target == productSelectModal)
 				productSelectModal.style.display = "none";
+			if (e.target == customerModal) customerModal.style.display = "none";
 		});
-
 		modalSearchInput.addEventListener("input", (e) =>
 			renderModalProducts(e.target.value)
 		);
@@ -952,50 +1249,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				productSelectModal.style.display = "none";
 			}
 		});
-
 		quoteProductList.addEventListener("input", handleQuoteListUpdate);
 		quoteProductList.addEventListener("click", handleQuoteListUpdate);
-
 		[freightCostInput, insuranceCostInput].forEach((el) =>
 			el.addEventListener("input", updateTotals)
 		);
-
-		exportBtn.addEventListener("click", () => {
-			const data = JSON.stringify({ settings, products }, null, 2);
-			const blob = new Blob([data], { type: "application/json" });
-			const a = document.createElement("a");
-			a.href = URL.createObjectURL(blob);
-			a.download = `trade_helper_backup_${new Date()
-				.toISOString()
-				.slice(0, 10)}.json`;
-			a.click();
-			URL.revokeObjectURL(a.href);
-		});
-
-		importInput.addEventListener("change", (e) => {
-			const file = e.target.files[0];
-			if (file && confirm("导入数据将覆盖现有所有设置和商品，确定继续吗？")) {
-				const reader = new FileReader();
-				reader.onload = (event) => {
-					try {
-						const data = JSON.parse(event.target.result);
-						if (data.settings && data.products) {
-							saveData("settings", data.settings);
-							saveData("products", data.products);
-							alert("数据导入成功！页面将重新加载。");
-							window.location.reload();
-						} else {
-							alert("文件格式不正确！");
-						}
-					} catch (err) {
-						alert("导入失败，文件可能已损坏。");
-						console.error(err);
-					}
-				};
-				reader.readAsText(file);
-			}
-			e.target.value = "";
-		});
 	}
 
 	init();

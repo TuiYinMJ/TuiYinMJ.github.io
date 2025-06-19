@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>外贸业务员 PI & 报价单生成器</title>
+    <title>外贸业务与CRM助手</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -21,30 +21,66 @@
             <nav class="sidebar-nav">
                 <ul>
                     <li><a href="#" class="nav-link active" data-target="dashboard">主面板</a></li>
+                    <li><a href="#" class="nav-link" data-target="crm-manager">客户管理 (CRM)</a></li>
                     <li><a href="#" class="nav-link" data-target="pi-generator">生成PI/报价单</a></li>
                     <li><a href="#" class="nav-link" data-target="product-manager">商品管理</a></li>
                     <li><a href="#" class="nav-link" data-target="settings-manager">后台设置</a></li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <button id="export-data-btn">导出数据 (备份)</button>
-                <label for="import-data-input" class="import-data-label">导入数据 (恢复)</label>
+                <button id="export-data-btn">导出全部数据</button>
+                <label for="import-data-input" class="import-data-label">导入全部数据</label>
                 <input type="file" id="import-data-input" accept=".json">
-                <p class="version">Version 11.0.0</p>
+                <p class="version">Version 12.0.0</p>
             </div>
         </aside>
 
         <main class="main-content">
             <div id="dashboard" class="module active">
-                <h1>欢迎使用外贸业务助手 V11.0</h1>
-                <p>此版本彻底重构了“导出为 Excel”功能，并增加了智能隐藏空字段的逻辑。</p>
-                <h3>V11 更新日志:</h3>
+                <h1>欢迎使用外贸业务与CRM助手 V12.0</h1>
+                <p>此版本新增了无需后端的简易CRM（客户关系管理）模块。</p>
+                <h3>V12 更新日志:</h3>
                 <ol>
-                    <li><strong>【核心重构】</strong> 采用全新技术，现在导出Excel可以完美保留图片、格式、颜色和排版。</li>
-                    <li><strong>【智能优化】</strong> 打印和导出Excel时，将自动隐藏用户未填写的项目（如Attn、规格等），使单据更专业。</li>
-                    <li><strong>【问题修复】</strong> 确认所有历史问题（行高、白屏、点击、小数输入）均已修复。</li>
+                    <li><strong>【核心功能】</strong> 新增“客户管理 (CRM)”模块，用于记录客户信息、联系人和跟进记录。</li>
+                    <li><strong>【数据整合】</strong> 导入/导出功能现已整合，可一次性备份和恢复商品、设置及所有客户数据。</li>
+                    <li><strong>【体验优化】</strong> CRM模块支持按客户名称、国家和星级进行搜索筛选。</li>
                 </ol>
             </div>
+
+            <!-- CRM Module Start -->
+            <div id="crm-manager" class="module">
+                <h2>客户管理 (CRM)</h2>
+                <div class="toolbar">
+                    <button id="add-new-customer-btn" class="btn-primary">新增客户</button>
+                    <div class="search-filters">
+                        <input type="text" id="crm-search-input" placeholder="搜索公司名称...">
+                        <select id="crm-country-filter">
+                            <option value="">所有国家</option>
+                        </select>
+                        <select id="crm-rating-filter">
+                            <option value="">所有星级</option>
+                            <option value="5">★★★★★</option>
+                            <option value="4">★★★★</option>
+                            <option value="3">★★★</option>
+                            <option value="2">★★</option>
+                            <option value="1">★</option>
+                        </select>
+                    </div>
+                </div>
+                <table id="customer-list-table">
+                    <thead>
+                        <tr>
+                            <th>公司名称</th>
+                            <th>国家</th>
+                            <th>星级</th>
+                            <th>最后跟进</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customer-list-body"></tbody>
+                </table>
+            </div>
+            <!-- CRM Module End -->
 
             <div id="pi-generator" class="module">
                 <h2>生成PI/报价单</h2>
@@ -244,6 +280,53 @@
             </div>
         </main>
     </div>
+
+    <!-- CRM Modal Start -->
+    <div id="customer-modal" class="modal">
+        <div class="modal-content large">
+            <span class="close-modal-btn">&times;</span>
+            <h2 id="customer-modal-title">新增客户</h2>
+            <form id="customer-form">
+                <input type="hidden" id="customer-id">
+                <fieldset>
+                    <legend>基础信息</legend>
+                    <div class="form-grid-col2">
+                        <input type="text" id="customer-name" placeholder="公司名称" required>
+                        <input type="text" id="customer-country" placeholder="国家/地区">
+                        <select id="customer-rating">
+                            <option value="3">★★★ (普通)</option>
+                            <option value="5">★★★★★ (非常重要)</option>
+                            <option value="4">★★★★ (重要)</option>
+                            <option value="2">★★ (一般)</option>
+                            <option value="1">★ (了解)</option>
+                        </select>
+                        <input type="text" id="customer-source" placeholder="客户来源">
+                    </div>
+                    <input type="text" id="customer-website" placeholder="公司网址">
+                    <textarea id="customer-address" placeholder="公司地址" rows="2"></textarea>
+                </fieldset>
+
+                <fieldset>
+                    <legend>联系人</legend>
+                    <div id="contacts-container"></div>
+                    <button type="button" id="add-contact-btn" class="btn-secondary">+ 添加联系人</button>
+                </fieldset>
+
+                <fieldset>
+                    <legend>跟进记录</legend>
+                    <div id="follow-ups-container"></div>
+                    <button type="button" id="add-follow-up-btn" class="btn-secondary">+ 添加跟进</button>
+                </fieldset>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">保存客户</button>
+                    <button type="button" id="delete-customer-btn" class="btn-delete"
+                        style="display: none;">删除客户</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- CRM Modal End -->
 
     <div id="product-select-modal" class="modal">
         <div class="modal-content"><span class="close-modal-btn">&times;</span>

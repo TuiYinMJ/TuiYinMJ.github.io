@@ -34,9 +34,12 @@ document.addEventListener("DOMContentLoaded", () => {
 	const exportBtn = getEl("export-data-btn");
 	const importInput = getEl("import-data-input");
 
+	// Dashboard
+	const todayTasksContainer = getEl("today-tasks-container");
+
 	// CRM
 	const crmSearchInput = getEl("crm-search-input");
-	const crmCountryFilter = getEl("crm-country-filter");
+	const crmStatusFilter = getEl("crm-status-filter");
 	const crmRatingFilter = getEl("crm-rating-filter");
 	const customerListBody = getEl("customer-list-body");
 	const addNewCustomerBtn = getEl("add-new-customer-btn");
@@ -47,17 +50,26 @@ document.addEventListener("DOMContentLoaded", () => {
 	const customerIdInput = getEl("customer-id");
 	const customerNameInput = getEl("customer-name");
 	const customerCountryInput = getEl("customer-country");
+	const customerIndustryInput = getEl("customer-industry");
+	const customerStatusInput = getEl("customer-status");
 	const customerRatingInput = getEl("customer-rating");
 	const customerSourceInput = getEl("customer-source");
 	const customerWebsiteInput = getEl("customer-website");
 	const customerAddressInput = getEl("customer-address");
+	const customerForwarderInput = getEl("customer-forwarder");
+	const customerNotesInput = getEl("customer-notes");
+	const customerNextFollowupDateInput = getEl("customer-next-followup-date");
+	const customerNextFollowupTaskInput = getEl("customer-next-followup-task");
 	const contactsContainer = getEl("contacts-container");
 	const addContactBtn = getEl("add-contact-btn");
 	const followUpsContainer = getEl("follow-ups-container");
 	const addFollowUpBtn = getEl("add-follow-up-btn");
+	const documentsContainer = getEl("documents-container");
 	const deleteCustomerBtn = getEl("delete-customer-btn");
+	const exportCrmBtn = getEl("export-crm-btn");
+	const importCrmInput = getEl("import-crm-input");
 
-	// PI Generator
+	// PI Generator & Products
 	const settingsForm = getEl("settings-form");
 	const companyNameInput = getEl("setting-company-name");
 	const companyAddressInput = getEl("setting-company-address");
@@ -104,6 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	const piForm = getEl("pi-form");
 	const docTypeSelect = getEl("doc-type");
 	const docCurrencySelect = getEl("doc-currency");
+	const linkCustomerSelect = getEl("link-customer-select");
+	const clearCustomerLinkBtn = getEl("clear-customer-link");
 	const docIncotermsInput = getEl("doc-incoterms");
 	const docPreparedByInput = getEl("doc-prepared-by");
 	const docRemarksInput = getEl("doc-remarks");
@@ -122,7 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	const grandTotalSpan = getEl("grand-total");
 	const productSelectModal = getEl("product-select-modal");
 	const showProductModalBtn = getEl("show-product-modal-btn");
-	const closeModalBtn = query(".close-modal-btn");
 	const modalProductList = getEl("modal-product-list");
 	const modalSearchInput = getEl("modal-search-input");
 	const exportExcelBtn = getEl("export-excel-btn");
@@ -132,16 +145,29 @@ document.addEventListener("DOMContentLoaded", () => {
 	const portDestinationInput = getEl("port-destination");
 
 	// --- CRM Functions ---
+	const getStatusClass = (status) => {
+		const mapping = {
+			潜在客户: "status-潜在客户",
+			已询盘: "status-已询盘",
+			已报价: "status-已报价",
+			样品单: "status-样品单",
+			已成交: "status-已成交",
+			无意向: "status-无意向",
+			其他: "status-其他",
+		};
+		return mapping[status] || "status-其他";
+	};
+
 	const renderCustomerList = () => {
 		const searchTerm = crmSearchInput.value.toLowerCase();
-		const countryFilter = crmCountryFilter.value;
+		const statusFilter = crmStatusFilter.value;
 		const ratingFilter = crmRatingFilter.value;
 
 		const filteredCustomers = customers.filter((c) => {
 			const nameMatch = c.name.toLowerCase().includes(searchTerm);
-			const countryMatch = !countryFilter || c.country === countryFilter;
+			const statusMatch = !statusFilter || c.status === statusFilter;
 			const ratingMatch = !ratingFilter || c.rating == ratingFilter;
-			return nameMatch && countryMatch && ratingMatch;
+			return nameMatch && statusMatch && ratingMatch;
 		});
 
 		customerListBody.innerHTML = "";
@@ -150,37 +176,40 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
+		filteredCustomers.sort((a, b) => {
+			if (a.nextFollowUpDate && b.nextFollowUpDate) {
+				return new Date(a.nextFollowUpDate) - new Date(b.nextFollowUpDate);
+			}
+			return a.nextFollowUpDate ? -1 : 1;
+		});
+
 		filteredCustomers.forEach((c) => {
-			const lastFollowUp =
-				c.followUps.length > 0
-					? c.followUps[c.followUps.length - 1].date
-					: "无记录";
 			const tr = document.createElement("tr");
 			tr.innerHTML = `
-                <td>${c.name}</td>
-                <td>${c.country || "N/A"}</td>
+                <td>${c.name}<small style="color: #5f6368;">${
+				c.country || ""
+			}</small></td>
+                <td><span class="status-badge ${getStatusClass(c.status)}">${
+				c.status
+			}</span></td>
                 <td class="star-rating">${"★".repeat(c.rating)}${"☆".repeat(
 				5 - c.rating
 			)}</td>
-                <td>${lastFollowUp}</td>
-                <td><button class="btn-action btn-edit" data-id="${
-									c.id
-								}">详情</button></td>
+                <td>${
+									c.nextFollowUpDate || "无"
+								}<small style="color: #5f6368;">${
+				c.nextFollowUpTask || ""
+			}</small></td>
+                <td>
+                    <button class="btn-action btn-new-quote" data-id="${
+											c.id
+										}">新建报价</button>
+                    <button class="btn-action btn-edit" data-id="${
+											c.id
+										}">详情</button>
+                </td>
             `;
 			customerListBody.appendChild(tr);
-		});
-	};
-
-	const populateCountryFilter = () => {
-		const countries = [
-			...new Set(customers.map((c) => c.country).filter(Boolean)),
-		];
-		crmCountryFilter.innerHTML = '<option value="">所有国家</option>';
-		countries.sort().forEach((country) => {
-			const option = document.createElement("option");
-			option.value = country;
-			option.textContent = country;
-			crmCountryFilter.appendChild(option);
 		});
 	};
 
@@ -189,6 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		customerIdInput.value = "";
 		contactsContainer.innerHTML = "";
 		followUpsContainer.innerHTML = "";
+		documentsContainer.innerHTML = "";
 
 		if (customerId) {
 			const customer = customers.find((c) => c.id === customerId);
@@ -197,17 +227,33 @@ document.addEventListener("DOMContentLoaded", () => {
 			customerIdInput.value = customer.id;
 			customerNameInput.value = customer.name;
 			customerCountryInput.value = customer.country;
-			customerRatingInput.value = customer.rating;
+			customerIndustryInput.value = customer.industry || "";
+			customerStatusInput.value = customer.status || "潜在客户";
+			customerRatingInput.value = customer.rating || 3;
 			customerSourceInput.value = customer.source;
 			customerWebsiteInput.value = customer.website;
 			customerAddressInput.value = customer.address;
-			customer.contacts.forEach(addContactRow);
-			customer.followUps.forEach(addFollowUpRow);
+			customerForwarderInput.value = customer.forwarderInfo || "";
+			customerNotesInput.value = customer.notes || "";
+			customerNextFollowupDateInput.value = customer.nextFollowUpDate || "";
+			customerNextFollowupTaskInput.value = customer.nextFollowUpTask || "";
+			(customer.contacts || []).forEach(addContactRow);
+			(customer.followUps || [])
+				.sort((a, b) => new Date(b.date) - new Date(a.date))
+				.forEach(addFollowUpRow);
+			(customer.documents || []).forEach((doc) => {
+				const div = document.createElement("div");
+				div.className = "document-item";
+				div.textContent = doc;
+				documentsContainer.appendChild(div);
+			});
 			deleteCustomerBtn.style.display = "inline-block";
 		} else {
 			customerModalTitle.textContent = "新增客户";
-			addContactRow(); // Add one empty contact by default
-			addFollowUpRow(); // Add one empty follow-up by default
+			customerStatusInput.value = "潜在客户";
+			customerRatingInput.value = 3;
+			addContactRow();
+			addFollowUpRow();
 			deleteCustomerBtn.style.display = "none";
 		}
 		customerModal.style.display = "block";
@@ -290,19 +336,26 @@ document.addEventListener("DOMContentLoaded", () => {
 				notes: card.querySelector(".follow-up-notes").value.trim(),
 			});
 		});
-		// Sort follow-ups by date, newest first
-		followUps.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+		const existingCustomer = customers.find((c) => c.id === id);
 
 		const customerData = {
 			id,
 			name: customerNameInput.value.trim(),
 			country: customerCountryInput.value.trim(),
+			industry: customerIndustryInput.value.trim(),
+			status: customerStatusInput.value,
 			rating: parseInt(customerRatingInput.value, 10),
 			source: customerSourceInput.value.trim(),
 			website: customerWebsiteInput.value.trim(),
 			address: customerAddressInput.value.trim(),
+			forwarderInfo: customerForwarderInput.value.trim(),
+			notes: customerNotesInput.value.trim(),
+			nextFollowUpDate: customerNextFollowupDateInput.value,
+			nextFollowUpTask: customerNextFollowupTaskInput.value.trim(),
 			contacts: contacts.filter((c) => c.name || c.email),
 			followUps: followUps.filter((f) => f.date || f.notes),
+			documents: existingCustomer ? existingCustomer.documents : [],
 		};
 
 		if (!customerData.name) {
@@ -319,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		saveData("customers", customers);
 		renderCustomerList();
-		populateCountryFilter();
+		renderDashboardTasks();
 		customerModal.style.display = "none";
 	};
 
@@ -333,12 +386,60 @@ document.addEventListener("DOMContentLoaded", () => {
 			customers = customers.filter((c) => c.id !== id);
 			saveData("customers", customers);
 			renderCustomerList();
-			populateCountryFilter();
+			renderDashboardTasks();
 			customerModal.style.display = "none";
 		}
 	};
 
+	const populateLinkCustomerSelect = () => {
+		linkCustomerSelect.innerHTML =
+			'<option value="">-- 关联到CRM客户 --</option>';
+		customers.forEach((c) => {
+			const option = document.createElement("option");
+			option.value = c.id;
+			option.textContent = c.name;
+			linkCustomerSelect.appendChild(option);
+		});
+	};
+
+	const renderDashboardTasks = () => {
+		todayTasksContainer.innerHTML = "";
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		const tasks = customers
+			.filter((c) => c.nextFollowUpDate)
+			.map((c) => ({
+				...c,
+				followUpDateObj: new Date(c.nextFollowUpDate),
+			}))
+			.filter((c) => c.followUpDateObj <= today)
+			.sort((a, b) => a.followUpDateObj - b.followUpDateObj);
+
+		if (tasks.length === 0) {
+			todayTasksContainer.innerHTML = "<p>今日无待办事项。</p>";
+			return;
+		}
+
+		tasks.forEach((task) => {
+			const div = document.createElement("div");
+			div.className = "task-item";
+			if (task.followUpDateObj < today) {
+				div.classList.add("overdue");
+			}
+			div.innerHTML = `
+                <div class="task-details">
+                    <strong data-id="${task.id}">${task.name}</strong>
+                    <p>${task.nextFollowUpTask}</p>
+                </div>
+                <span class="task-date">${task.nextFollowUpDate}</span>
+            `;
+			todayTasksContainer.appendChild(div);
+		});
+	};
+
 	// --- Core Functions ---
+	// (The other functions remain the same)
 	const addCurrencyRow = (currency = { code: "", rate: "" }) => {
 		const div = document.createElement("div");
 		div.className = "currency-pair";
@@ -536,6 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		);
 		if (targetId === "pi-generator") {
 			renderCurrencyOptions();
+			populateLinkCustomerSelect();
 			const s = settings;
 			docDateInput.valueAsDate = new Date();
 			generateDocId();
@@ -550,7 +652,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			docPreparedByInput.value = s.preparedBy || "";
 		} else if (targetId === "crm-manager") {
 			renderCustomerList();
-			populateCountryFilter();
+		} else if (targetId === "dashboard") {
+			renderDashboardTasks();
 		}
 	};
 
@@ -681,18 +784,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const handlePiFormSubmit = (e) => {
 		e.preventDefault();
+
+		// Link document to customer if selected
+		const customerId = linkCustomerSelect.value;
+		if (customerId) {
+			const customer = customers.find((c) => c.id === customerId);
+			if (customer) {
+				if (!customer.documents) {
+					customer.documents = [];
+				}
+				const docId = docIdInput.value;
+				if (docId && !customer.documents.includes(docId)) {
+					customer.documents.push(docId);
+					saveData("customers", customers);
+				}
+			}
+		}
+
 		const currency = docCurrencySelect.value;
 		const bankInfoHTML =
 			docTypeSelect.value === "PROFORMA INVOICE" && settings.bankInfo
 				? `<div class="print-terms"><h3>BANK INFORMATION:</h3><p>${settings.bankInfo.replace(
 						/\n/g,
-						"<br>"
+						""
 				  )}</p></div>`
 				: "";
 		const remarksHTML = docRemarksInput.value.trim()
 			? `<div class="print-terms"><h3>REMARKS:</h3><p>${docRemarksInput.value.replace(
 					/\n/g,
-					"<br>"
+					""
 			  )}</p></div>`
 			: "";
 		const attnHTML = buyerAttnInput.value.trim()
@@ -721,7 +841,7 @@ document.addEventListener("DOMContentLoaded", () => {
 											buyerNameInput.value
 										}</strong></p><p>${buyerAddressInput.value.replace(
 			/\n/g,
-			"<br>"
+			""
 		)}</p>${attnHTML}</div>
                     <div class="doc-info">
                         <p><strong>No.:</strong> ${
@@ -759,7 +879,7 @@ document.addEventListener("DOMContentLoaded", () => {
 													.querySelector(".quote-item-specs")
 													.value.trim();
 												if (specs)
-													descriptionParts.push(specs.replace(/\n/g, "<br>"));
+													descriptionParts.push(specs.replace(/\n/g, ""));
 												if (item.packaging)
 													descriptionParts.push(`Packaging: ${item.packaging}`);
 												if (item.hsCode)
@@ -778,9 +898,7 @@ document.addEventListener("DOMContentLoaded", () => {
 															item.image ||
 															"https://placehold.co/60x60/eee/ccc?text=No+Img"
 														}"></td>
-                            <td class="desc">${descriptionParts.join(
-															"<br>"
-														)}</td>
+                            <td class="desc">${descriptionParts.join("")}</td>
                             <td>${qty}</td>
                             <td>${item.unit}</td>
                             <td>${price.toFixed(2)}</td>
@@ -828,11 +946,11 @@ document.addEventListener("DOMContentLoaded", () => {
 										}
                     <p><strong>Payment Terms:</strong> ${paymentTermsInput.value.replace(
 											/\n/g,
-											"<br>"
+											""
 										)}</p>
                     <p><strong>Lead Time:</strong> ${leadTimeInput.value.replace(
 											/\n/g,
-											"<br>"
+											""
 										)}</p>
                 </section>
                 ${remarksHTML}
@@ -864,6 +982,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
 
 	const handleExportToExcel = () => {
+		// ... (This function remains the same as previous version)
 		exportExcelBtn.textContent = "正在生成...";
 		exportExcelBtn.disabled = true;
 
@@ -874,16 +993,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Use the same logic as print to generate the HTML string
 		const bankInfoHTML =
 			docTypeSelect.value === "PROFORMA INVOICE" && settings.bankInfo
-				? `<p><b>BANK INFORMATION:</b><br>${settings.bankInfo.replace(
+				? `<p><b>BANK INFORMATION:</b>${settings.bankInfo.replace(
 						/\n/g,
-						"<br>"
+						""
 				  )}</p>`
 				: "";
 		const remarksHTML = docRemarksInput.value.trim()
-			? `<p><b>REMARKS:</b><br>${docRemarksInput.value.replace(
-					/\n/g,
-					"<br>"
-			  )}</p>`
+			? `<p><b>REMARKS:</b>${docRemarksInput.value.replace(/\n/g, "")}</p>`
 			: "";
 		const attnHTML = buyerAttnInput.value.trim()
 			? `<tr><td colspan="2">Attn: ${buyerAttnInput.value}</td></tr>`
@@ -900,7 +1016,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				descriptionParts.push(`<b>${item.model}:</b> ${item.name}`);
 
 				const specs = row.querySelector(".quote-item-specs").value.trim();
-				if (specs) descriptionParts.push(specs.replace(/\n/g, "<br>"));
+				if (specs) descriptionParts.push(specs.replace(/\n/g, ""));
 				if (item.packaging)
 					descriptionParts.push(`Packaging: ${item.packaging}`);
 				if (item.hsCode) descriptionParts.push(`HS Code: ${item.hsCode}`);
@@ -920,7 +1036,7 @@ document.addEventListener("DOMContentLoaded", () => {
 									item.image || "https://placehold.co/80x80/eee/ccc?text=No+Img"
 								}" width="80" height="80"></td>
                 <td style="vertical-align:top;">${descriptionParts.join(
-									"<br>"
+									""
 								)}</td>
                 <td style="text-align:center; vertical-align:top;">${qty}</td>
                 <td style="text-align:center; vertical-align:top;">${
@@ -955,12 +1071,9 @@ document.addEventListener("DOMContentLoaded", () => {
 										}
                     <p>Payment Terms: ${paymentTermsInput.value.replace(
 											/\n/g,
-											"<br>"
+											""
 										)}</p>
-                    <p>Lead Time: ${leadTimeInput.value.replace(
-											/\n/g,
-											"<br>"
-										)}</p>
+                    <p>Lead Time: ${leadTimeInput.value.replace(/\n/g, "")}</p>
                 </td>
                 <td>Subtotal:</td>
                 <td style="text-align:right;">${
@@ -996,20 +1109,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 <table border="1">
                     <tr>
                         <td colspan="4" style="font-size:14pt;">
-                            <b>${settings.companyName || ""}</b><br>
+                            <b>${settings.companyName || ""}</b>
                             ${(settings.companyAddress || "").replace(
 															/\n/g,
-															"<br>"
-														)}<br>
+															""
+														)}
                             ${(settings.companyContact || "").replace(
 															/\n/g,
-															"<br>"
+															""
 														)}
                         </td>
                         <td colspan="3" style="text-align:center; vertical-align:middle; font-size:18pt; font-weight:bold;">
                             ${
 															settings.logo
-																? `<img src="${settings.logo}" width="180"><br>`
+																? `<img src="${settings.logo}" width="180">`
 																: ""
 														}
                             ${docType}
@@ -1031,7 +1144,7 @@ document.addEventListener("DOMContentLoaded", () => {
                      <tr>
                         <td colspan="2" rowspan="2">${buyerAddressInput.value.replace(
 													/\n/g,
-													"<br>"
+													""
 												)}</td>
                         <td></td>
                         <td colspan="2"><b>Incoterms:</b></td>
@@ -1078,6 +1191,186 @@ document.addEventListener("DOMContentLoaded", () => {
 		exportExcelBtn.disabled = false;
 	};
 
+	// --- New CRM I/O Functions ---
+	const handleCrmExport = () => {
+		try {
+			const wb = XLSX.utils.book_new();
+
+			// Sheet 1: Customers
+			const customersData = customers.map((c) => ({
+				客户ID: c.id,
+				公司名称: c.name,
+				状态: c.status,
+				星级: c.rating,
+				国家: c.country,
+				客户来源: c.source,
+				所属行业: c.industry,
+				公司网址: c.website,
+				公司地址: c.address,
+				下次跟进日期: c.nextFollowUpDate,
+				下次跟进任务: c.nextFollowUpTask,
+				货代信息: c.forwarderInfo,
+				备注: c.notes,
+			}));
+			const wsCustomers = XLSX.utils.json_to_sheet(customersData);
+			XLSX.utils.book_append_sheet(wb, wsCustomers, "客户主数据");
+
+			// Sheet 2: Contacts
+			const contactsData = [];
+			customers.forEach((c) => {
+				(c.contacts || []).forEach((ct) => {
+					contactsData.push({
+						客户ID: c.id,
+						公司名称: c.name,
+						联系人姓名: ct.name,
+						职位: ct.position,
+						邮箱: ct.email,
+						电话: ct.phone,
+						社交账号: ct.social,
+					});
+				});
+			});
+			const wsContacts = XLSX.utils.json_to_sheet(contactsData);
+			XLSX.utils.book_append_sheet(wb, wsContacts, "联系人");
+
+			// Sheet 3: Follow-ups
+			const followUpsData = [];
+			customers.forEach((c) => {
+				(c.followUps || []).forEach((f) => {
+					followUpsData.push({
+						客户ID: c.id,
+						公司名称: c.name,
+						跟进日期: f.date,
+						跟进方式: f.method,
+						跟进内容: f.notes,
+					});
+				});
+			});
+			const wsFollowUps = XLSX.utils.json_to_sheet(followUpsData);
+			XLSX.utils.book_append_sheet(wb, wsFollowUps, "跟进记录");
+
+			// Sheet 4: Documents
+			const documentsData = [];
+			customers.forEach((c) => {
+				(c.documents || []).forEach((doc) => {
+					documentsData.push({
+						客户ID: c.id,
+						公司名称: c.name,
+						单据号: doc,
+					});
+				});
+			});
+			const wsDocuments = XLSX.utils.json_to_sheet(documentsData);
+			XLSX.utils.book_append_sheet(wb, wsDocuments, "关联单据");
+
+			XLSX.writeFile(
+				wb,
+				`CRM_Data_Export_${new Date().toISOString().slice(0, 10)}.xlsx`
+			);
+		} catch (error) {
+			alert("导出CRM数据失败！");
+			console.error(error);
+		}
+	};
+
+	const handleCrmImport = (e) => {
+		const file = e.target.files[0];
+		if (!file) return;
+
+		if (!confirm("导入CRM数据将覆盖现有的所有客户信息，确定继续吗？")) {
+			e.target.value = "";
+			return;
+		}
+
+		const reader = new FileReader();
+		reader.onload = (event) => {
+			try {
+				const data = event.target.result;
+				const workbook = XLSX.read(data, { type: "binary" });
+				const newCustomers = [];
+
+				const wsCustomers = workbook.Sheets["客户主数据"];
+				const customerJson = XLSX.utils.sheet_to_json(wsCustomers);
+
+				customerJson.forEach((row) => {
+					newCustomers.push({
+						id: row["客户ID"] || Date.now().toString(),
+						name: row["公司名称"] || "",
+						status: row["状态"] || "潜在客户",
+						rating: row["星级"] || 3,
+						country: row["国家"] || "",
+						source: row["客户来源"] || "",
+						industry: row["所属行业"] || "",
+						website: row["公司网址"] || "",
+						address: row["公司地址"] || "",
+						nextFollowUpDate: row["下次跟进日期"] || "",
+						nextFollowUpTask: row["下次跟进任务"] || "",
+						forwarderInfo: row["货代信息"] || "",
+						notes: row["备注"] || "",
+						contacts: [],
+						followUps: [],
+						documents: [],
+					});
+				});
+
+				const wsContacts = workbook.Sheets["联系人"];
+				if (wsContacts) {
+					const contactsJson = XLSX.utils.sheet_to_json(wsContacts);
+					contactsJson.forEach((row) => {
+						const customer = newCustomers.find((c) => c.id == row["客户ID"]);
+						if (customer) {
+							customer.contacts.push({
+								name: row["联系人姓名"] || "",
+								position: row["职位"] || "",
+								email: row["邮箱"] || "",
+								phone: row["电话"] || "",
+								social: row["社交账号"] || "",
+							});
+						}
+					});
+				}
+
+				const wsFollowUps = workbook.Sheets["跟进记录"];
+				if (wsFollowUps) {
+					const followUpsJson = XLSX.utils.sheet_to_json(wsFollowUps);
+					followUpsJson.forEach((row) => {
+						const customer = newCustomers.find((c) => c.id == row["客户ID"]);
+						if (customer) {
+							customer.followUps.push({
+								date: row["跟进日期"] || "",
+								method: row["跟进方式"] || "",
+								notes: row["跟进内容"] || "",
+							});
+						}
+					});
+				}
+
+				const wsDocuments = workbook.Sheets["关联单据"];
+				if (wsDocuments) {
+					const documentsJson = XLSX.utils.sheet_to_json(wsDocuments);
+					documentsJson.forEach((row) => {
+						const customer = newCustomers.find((c) => c.id == row["客户ID"]);
+						if (customer && row["单据号"]) {
+							customer.documents.push(row["单据号"]);
+						}
+					});
+				}
+
+				customers = newCustomers;
+				saveData("customers", customers);
+				renderCustomerList();
+				renderDashboardTasks();
+				alert("CRM数据导入成功！");
+			} catch (error) {
+				alert("导入失败，文件格式不正确或已损坏。");
+				console.error(error);
+			} finally {
+				e.target.value = "";
+			}
+		};
+		reader.readAsBinaryString(file);
+	};
+
 	function init() {
 		// Load all data
 		settings = loadData("settings", {});
@@ -1088,7 +1381,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		renderSettings();
 		renderProducts();
 		renderCustomerList();
-		populateCountryFilter();
+		renderDashboardTasks();
 
 		// General Event Listeners
 		navLinks.forEach((link) => link.addEventListener("click", handleNavClick));
@@ -1115,10 +1408,10 @@ document.addEventListener("DOMContentLoaded", () => {
 				reader.onload = (event) => {
 					try {
 						const data = JSON.parse(event.target.result);
-						if (data.settings && data.products && data.customers) {
+						if (data.settings && data.products) {
 							saveData("settings", data.settings);
 							saveData("products", data.products);
-							saveData("customers", data.customers);
+							saveData("customers", data.customers || []); // Handle older backups
 							alert("数据导入成功！页面将重新加载。");
 							window.location.reload();
 						} else {
@@ -1137,11 +1430,28 @@ document.addEventListener("DOMContentLoaded", () => {
 		// CRM Event Listeners
 		addNewCustomerBtn.addEventListener("click", () => openCustomerModal());
 		customerListBody.addEventListener("click", (e) => {
-			if (e.target.classList.contains("btn-edit")) {
-				openCustomerModal(e.target.dataset.id);
+			const button = e.target.closest("button.btn-action");
+			if (!button) return;
+			const id = button.dataset.id;
+			if (button.classList.contains("btn-edit")) {
+				openCustomerModal(id);
+			} else if (button.classList.contains("btn-new-quote")) {
+				const customer = customers.find((c) => c.id === id);
+				if (!customer) return;
+
+				query('.nav-link[data-target="pi-generator"]').click();
+				linkCustomerSelect.value = id;
+				linkCustomerSelect.dispatchEvent(new Event("change"));
 			}
 		});
-		[crmSearchInput, crmCountryFilter, crmRatingFilter].forEach((el) => {
+		todayTasksContainer.addEventListener("click", (e) => {
+			if (e.target.tagName === "STRONG") {
+				const id = e.target.dataset.id;
+				query('.nav-link[data-target="crm-manager"]').click();
+				openCustomerModal(id);
+			}
+		});
+		[crmSearchInput, crmStatusFilter, crmRatingFilter].forEach((el) => {
 			el.addEventListener("input", renderCustomerList);
 		});
 		closeCustomerModalBtn.addEventListener(
@@ -1152,6 +1462,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		addFollowUpBtn.addEventListener("click", () => addFollowUpRow());
 		customerForm.addEventListener("submit", handleCustomerFormSubmit);
 		deleteCustomerBtn.addEventListener("click", handleDeleteCustomer);
+		exportCrmBtn.addEventListener("click", handleCrmExport);
+		importCrmInput.addEventListener("change", handleCrmImport);
 
 		// Settings Event Listeners
 		settingsForm.addEventListener("submit", handleSettingsSave);
@@ -1211,6 +1523,30 @@ document.addEventListener("DOMContentLoaded", () => {
 		piForm.addEventListener("reset", () => {
 			quoteItems = [];
 			renderQuoteItems();
+			linkCustomerSelect.value = "";
+		});
+		linkCustomerSelect.addEventListener("change", (e) => {
+			const customerId = e.target.value;
+			if (!customerId) {
+				buyerNameInput.value = "";
+				buyerAddressInput.value = "";
+				buyerAttnInput.value = "";
+				return;
+			}
+			const customer = customers.find((c) => c.id === customerId);
+			if (customer) {
+				buyerNameInput.value = customer.name;
+				buyerAddressInput.value = customer.address;
+				const mainContact =
+					customer.contacts && customer.contacts.length > 0
+						? customer.contacts[0].name
+						: "";
+				buyerAttnInput.value = mainContact;
+			}
+		});
+		clearCustomerLinkBtn.addEventListener("click", () => {
+			linkCustomerSelect.value = "";
+			linkCustomerSelect.dispatchEvent(new Event("change"));
 		});
 		generateDocIdBtn.addEventListener("click", generateDocId);
 		docCurrencySelect.addEventListener("change", () => {

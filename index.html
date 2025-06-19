@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- 引入 SheetJS 库用于生成 Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -31,20 +33,30 @@
                 <button id="export-data-btn">导出全部数据</button>
                 <label for="import-data-input" class="import-data-label">导入全部数据</label>
                 <input type="file" id="import-data-input" accept=".json">
-                <p class="version">Version 12.0.0</p>
+                <p class="version">Version 13.0.0</p>
             </div>
         </aside>
 
         <main class="main-content">
             <div id="dashboard" class="module active">
-                <h1>欢迎使用外贸业务与CRM助手 V12.0</h1>
-                <p>此版本新增了无需后端的简易CRM（客户关系管理）模块。</p>
-                <h3>V12 更新日志:</h3>
-                <ol>
-                    <li><strong>【核心功能】</strong> 新增“客户管理 (CRM)”模块，用于记录客户信息、联系人和跟进记录。</li>
-                    <li><strong>【数据整合】</strong> 导入/导出功能现已整合，可一次性备份和恢复商品、设置及所有客户数据。</li>
-                    <li><strong>【体验优化】</strong> CRM模块支持按客户名称、国家和星级进行搜索筛选。</li>
-                </ol>
+                <h2>主面板</h2>
+                <div class="dashboard-grid">
+                    <div class="dashboard-widget">
+                        <h3>今日待办 (Next Actions)</h3>
+                        <div id="today-tasks-container">
+                            <!-- Tasks will be dynamically inserted here -->
+                        </div>
+                    </div>
+                    <div class="dashboard-widget">
+                        <h3>V13.0 更新日志</h3>
+                        <ol>
+                            <li><strong>【CRM重构】</strong> 引入客户状态、跟进计划、单据关联等专业功能。</li>
+                            <li><strong>【智能提醒】</strong> 主面板新增“今日待办”模块，自动提醒跟进任务。</li>
+                            <li><strong>【独立导入导出】</strong> CRM模块现支持独立、专业的多页Excel导入导出。</li>
+                            <li><strong>【体验优化】</strong> 可在CRM中为客户“一键新建报价”。</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
 
             <!-- CRM Module Start -->
@@ -54,8 +66,15 @@
                     <button id="add-new-customer-btn" class="btn-primary">新增客户</button>
                     <div class="search-filters">
                         <input type="text" id="crm-search-input" placeholder="搜索公司名称...">
-                        <select id="crm-country-filter">
-                            <option value="">所有国家</option>
+                        <select id="crm-status-filter">
+                            <option value="">所有状态</option>
+                            <option value="潜在客户">潜在客户</option>
+                            <option value="已询盘">已询盘</option>
+                            <option value="已报价">已报价</option>
+                            <option value="样品单">样品单</option>
+                            <option value="已成交">已成交</option>
+                            <option value="无意向">无意向</option>
+                            <option value="其他">其他</option>
                         </select>
                         <select id="crm-rating-filter">
                             <option value="">所有星级</option>
@@ -66,15 +85,20 @@
                             <option value="1">★</option>
                         </select>
                     </div>
+                    <div class="crm-io-buttons">
+                        <button id="export-crm-btn" class="btn-export">导出CRM (Excel)</button>
+                        <label for="import-crm-input" class="btn-secondary">导入CRM (Excel)</label>
+                        <input type="file" id="import-crm-input" accept=".xlsx, .xls">
+                    </div>
                 </div>
                 <table id="customer-list-table">
                     <thead>
                         <tr>
-                            <th>公司名称</th>
-                            <th>国家</th>
-                            <th>星级</th>
-                            <th>最后跟进</th>
-                            <th>操作</th>
+                            <th style="width: 25%;">公司名称</th>
+                            <th style="width: 15%;">状态</th>
+                            <th style="width: 15%;">星级</th>
+                            <th style="width: 20%;">下次跟进计划</th>
+                            <th style="width: 25%;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="customer-list-body"></tbody>
@@ -97,6 +121,13 @@
                         </fieldset>
                         <fieldset>
                             <legend>客户信息</legend>
+                            <div class="input-group">
+                                <select id="link-customer-select"
+                                    style="border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                                    <option value="">-- 关联到CRM客户 --</option>
+                                </select>
+                                <button type="button" id="clear-customer-link" class="addon-btn" title="清除关联">✖</button>
+                            </div>
                             <input type="text" id="buyer-name" placeholder="客户公司名称" required>
                             <textarea id="buyer-address" placeholder="客户公司地址" required></textarea>
                             <input type="text" id="buyer-attn" placeholder="联系人 (Attn), 可留空">
@@ -289,10 +320,18 @@
             <form id="customer-form">
                 <input type="hidden" id="customer-id">
                 <fieldset>
-                    <legend>基础信息</legend>
-                    <div class="form-grid-col2">
+                    <legend>核心信息</legend>
+                    <div class="form-grid-col3">
                         <input type="text" id="customer-name" placeholder="公司名称" required>
-                        <input type="text" id="customer-country" placeholder="国家/地区">
+                        <select id="customer-status">
+                            <option value="潜在客户">潜在客户</option>
+                            <option value="已询盘">已询盘</option>
+                            <option value="已报价">已报价</option>
+                            <option value="样品单">样品单</option>
+                            <option value="已成交">已成交</option>
+                            <option value="无意向">无意向</option>
+                            <option value="其他">其他</option>
+                        </select>
                         <select id="customer-rating">
                             <option value="3">★★★ (普通)</option>
                             <option value="5">★★★★★ (非常重要)</option>
@@ -300,22 +339,51 @@
                             <option value="2">★★ (一般)</option>
                             <option value="1">★ (了解)</option>
                         </select>
+                    </div>
+                    <div class="form-grid-col3">
+                        <input type="text" id="customer-country" placeholder="国家/地区">
                         <input type="text" id="customer-source" placeholder="客户来源">
+                        <input type="text" id="customer-industry" placeholder="所属行业">
                     </div>
                     <input type="text" id="customer-website" placeholder="公司网址">
                     <textarea id="customer-address" placeholder="公司地址" rows="2"></textarea>
                 </fieldset>
 
                 <fieldset>
-                    <legend>联系人</legend>
-                    <div id="contacts-container"></div>
-                    <button type="button" id="add-contact-btn" class="btn-secondary">+ 添加联系人</button>
+                    <legend>下次跟进计划</legend>
+                    <div class="form-grid-col2">
+                        <input type="date" id="customer-next-followup-date">
+                        <input type="text" id="customer-next-followup-task" placeholder="跟进任务简述 (如: 催促样品费)">
+                    </div>
+                </fieldset>
+
+                <div class="form-grid-col2">
+                    <fieldset>
+                        <legend>联系人</legend>
+                        <div id="contacts-container"></div>
+                        <button type="button" id="add-contact-btn" class="btn-secondary">+ 添加联系人</button>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>跟进历史</legend>
+                        <div id="follow-ups-container"></div>
+                        <button type="button" id="add-follow-up-btn" class="btn-secondary">+ 添加跟进</button>
+                    </fieldset>
+                </div>
+
+                <fieldset>
+                    <legend>关联单据</legend>
+                    <div id="documents-container"></div>
                 </fieldset>
 
                 <fieldset>
-                    <legend>跟进记录</legend>
-                    <div id="follow-ups-container"></div>
-                    <button type="button" id="add-follow-up-btn" class="btn-secondary">+ 添加跟进</button>
+                    <legend>货代信息</legend>
+                    <textarea id="customer-forwarder" placeholder="记录客户指定的货代信息" rows="3"></textarea>
+                </fieldset>
+
+                <fieldset>
+                    <legend>客户备注</legend>
+                    <textarea id="customer-notes" placeholder="记录关于客户的其他重要信息" rows="3"></textarea>
                 </fieldset>
 
                 <div class="form-actions">

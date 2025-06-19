@@ -1,4 +1,4 @@
-/* --- 全局样式 V12.0 --- */
+/* --- 全局样式 V13.0 --- */
 :root {
     --primary-color: #1a73e8;
     --secondary-color: #5f6368;
@@ -154,6 +154,68 @@ body {
     }
 }
 
+/* --- Dashboard --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.dashboard-widget {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 var(--shadow-color-light), 0 1px 3px 1px var(--shadow-color-heavy);
+}
+
+.dashboard-widget h3 {
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+#today-tasks-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.task-item {
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-item.overdue .task-date {
+    color: var(--delete-btn-bg);
+    font-weight: bold;
+}
+
+.task-details {
+    flex-grow: 1;
+}
+
+.task-details strong {
+    cursor: pointer;
+    color: var(--primary-color);
+}
+
+.task-details strong:hover {
+    text-decoration: underline;
+}
+
+.task-details p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #5f6368;
+}
+
+
 /* --- 表单和通用元素 --- */
 h2 {
     margin-bottom: 25px;
@@ -162,9 +224,6 @@ h2 {
 h3 {
     margin-bottom: 20px;
     color: #3c4043;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 8px;
-    display: inline-block;
 }
 
 fieldset {
@@ -269,6 +328,18 @@ textarea:focus {
     background-color: var(--delete-btn-hover);
 }
 
+.btn-new-quote {
+    background-color: #e8710a;
+    padding: 5px 12px;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: white;
+}
+
+.btn-new-quote:hover {
+    background-color: #c25a07;
+}
+
 .form-actions {
     margin-top: 20px;
 }
@@ -312,14 +383,12 @@ textarea:focus {
 }
 
 .input-group input,
+.input-group select,
 .input-with-addon input {
     margin-bottom: 0;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-right: none;
 }
 
-.input-group .input-group-text,
+.input-group .addon-btn,
 .input-with-addon .addon-btn {
     padding: 0 12px;
     background-color: #f1f3f4;
@@ -505,11 +574,14 @@ td .btn-delete-row {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .search-filters {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .search-filters input,
@@ -519,9 +591,64 @@ td .btn-delete-row {
     min-width: 150px;
 }
 
+.crm-io-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.crm-io-buttons .btn-secondary {
+    color: var(--text-color);
+    background-color: #e8e8e8;
+}
+
+.crm-io-buttons .btn-secondary:hover {
+    background-color: #dcdcdc;
+}
+
+#import-crm-input {
+    display: none;
+}
+
 #customer-list-table .star-rating {
     color: #fbbc04;
     font-size: 1.2em;
+}
+
+#customer-list-table .status-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.85em;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-潜在客户 {
+    background-color: #4285f4;
+}
+
+.status-已询盘 {
+    background-color: #fbbc04;
+}
+
+.status-已报价 {
+    background-color: #34a853;
+}
+
+.status-样品单 {
+    background-color: #ff6d01;
+}
+
+.status-已成交 {
+    background-color: #d93025;
+}
+
+.status-无意向 {
+    background-color: #70757a;
+}
+
+.status-其他 {
+    background-color: #9aa0a6;
 }
 
 .contact-card,
@@ -555,10 +682,21 @@ td .btn-delete-row {
 }
 
 #contacts-container,
-#follow-ups-container {
-    max-height: 300px;
+#follow-ups-container,
+#documents-container {
+    max-height: 250px;
     overflow-y: auto;
-    padding-right: 10px;
+    padding: 5px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.document-item {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 5px;
 }
 
 

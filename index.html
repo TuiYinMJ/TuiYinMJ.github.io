@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
@@ -36,7 +37,7 @@
                 <div class="data-warning">
                     <p>⚠️ 数据存储于本地浏览器，请定期导出备份，以防数据丢失！</p>
                 </div>
-                <p class="version">Version 13.1.0 (专业增强版)</p>
+                <p class="version">Version 14.0 (动态表格版)</p>
             </div>
         </aside>
 
@@ -56,18 +57,15 @@
                         </div>
                     </div>
                     <div class="dashboard-widget">
-                        <h3>V13.1 更新日志</h3>
+                        <h3>V14.0 更新日志</h3>
                         <ol>
-                            <li><strong>【致命修复】</strong> 解决了模态框(对话框)在内部点击时意外关闭导致数据丢失的问题。</li>
-                            <li><strong>【导出升级】</strong> 重构PI/报价单导出功能：
-                                <ul>
-                                    <li>打印预览采用更专业、清晰的A4布局。</li>
-                                    <li>Excel导出升级为原生XLSX格式，结构清晰，不再乱码。</li>
-                                </ul>
-                            </li>
-                            <li><strong>【仪表盘增强】</strong> 主面板新增“客户漏斗分析”图表，业务状态一目了然。</li>
-                            <li><strong>【安全提示】</strong> 增加了数据本地存储的风险提示，并强化备份按钮。</li>
-                            <li><strong>【体验优化】</strong> 全面优化了UI细节和操作反馈，提升专业感。</li>
+                            <li><strong>【重磅】</strong>报价单表格支持动态插入、删除、重命名列。</li>
+                            <li><strong>【重磅】</strong>报价单表格的自定义列支持批量填充数据。</li>
+                            <li><strong>【功能】</strong>新增打印选项，可自定义是否显示表格线。</li>
+                            <li><strong>【功能】</strong>后台设置新增公司印章上传功能。</li>
+                            <li><strong>【优化】</strong>单据签名区仅在上传印章后显示，节省空间。</li>
+                            <li><strong>【优化】</strong>进一步简化单据总计(TOTAL)区域的样式和逻辑。</li>
+                            <li><strong>【修复】</strong>修复了打印预览中表格线条不完整的问题。</li>
                         </ol>
                     </div>
                 </div>
@@ -159,21 +157,21 @@
                         </fieldset>
                     </div>
 
-                    <h3>商品列表 (<span id="quote-currency-label">USD</span>)</h3>
-                    <table id="quote-product-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 80px;">图片</th>
-                                <th>商品描述</th>
-                                <th style="width: 100px;">数量</th>
-                                <th style="width: 80px;">单位</th>
-                                <th style="width: 120px;">单价</th>
-                                <th style="width: 150px;">金额</th>
-                                <th style="width: 60px;">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="quote-product-list"></tbody>
-                    </table>
+                    <div class="pi-options">
+                        <h3>商品列表 (<span id="quote-currency-label">USD</span>)</h3>
+                        <label class="print-options-label"><input type="checkbox" id="print-show-borders" checked>
+                            打印时显示表格线</label>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table id="quote-product-table">
+                            <thead>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+
                     <button type="button" id="show-product-modal-btn" class="btn-primary">从商品库添加</button>
 
                     <div class="form-grid-large-col" style="margin-top: 20px;">
@@ -296,6 +294,18 @@
                                 id="setting-company-logo-url" placeholder="粘贴远程Logo图片URL"></div>
                         <input type="hidden" id="setting-company-logo-storage">
                     </fieldset>
+
+                    <fieldset>
+                        <legend>公司印章 (可选)</legend>
+                        <p style="margin-bottom: 15px; font-size: 0.9em; color: #5f6368;">上传印章图片后，将在单据末尾自动显示签名栏和印章区域。
+                        </p>
+                        <label for="setting-company-seal-input" class="file-label">选择印章图片</label>
+                        <input type="file" id="setting-company-seal-input" accept="image/*">
+                        <img id="setting-company-seal-preview" src="#" alt="印章预览"
+                            style="background: #f8f9fa; border: 1px dashed #ccc; padding: 5px;">
+                        <input type="hidden" id="setting-company-seal-storage">
+                    </fieldset>
+
                     <fieldset>
                         <legend>财务与币种</legend>
                         <textarea id="setting-bank-info" placeholder="银行名称, SWIFT, 账号等收款信息... (在生成PI时会自动显示)"
@@ -424,7 +434,8 @@
 
     <div id="print-preview-area"></div>
 
-    <script src="app.js"></script>
+    <script type="module" src="js/app.js"></script>
+
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-/* --- 全局样式 V13.1 --- */
+/* --- 全局样式 V14.0 --- */
 :root {
     --primary-color: #1a73e8;
     --secondary-color: #5f6368;
@@ -33,7 +33,6 @@ body {
     line-height: 1.6;
     font-size: 16px;
     overflow: hidden;
-    /* 防止主页面滚动 */
 }
 
 /* --- 主布局 --- */
@@ -511,7 +510,8 @@ input[type="file"] {
 }
 
 #product-image-preview,
-#setting-company-logo-preview {
+#setting-company-logo-preview,
+#setting-company-seal-preview {
     max-width: 100px;
     margin-top: 10px;
     border-radius: 8px;
@@ -524,10 +524,15 @@ table {
     border-collapse: collapse;
     margin-bottom: 20px;
     background-color: #ffffff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 2px 0 var(--shadow-color-light), 0 1px 3px 1px var(--shadow-color-heavy);
 }
+
+.table-wrapper {
+    box-shadow: 0 1px 2px 0 var(--shadow-color-light), 0 1px 3px 1px var(--shadow-color-heavy);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
 
 th,
 td {
@@ -776,6 +781,116 @@ td .btn-delete-row {
 
 
 /* --- PI/报价单 模块样式 --- */
+.pi-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.pi-options h3 {
+    margin-bottom: 0;
+}
+
+.pi-options .print-options-label {
+    font-size: 0.9em;
+    font-weight: normal;
+    color: var(--secondary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.pi-options .print-options-label input {
+    width: auto;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+#quote-product-table {
+    margin-bottom: 15px;
+    border-spacing: 0;
+}
+
+#quote-product-table th {
+    position: relative;
+    padding-right: 50px !important;
+    white-space: nowrap;
+}
+
+#quote-product-table th span[contenteditable] {
+    display: inline-block;
+    padding: 2px 5px;
+    min-width: 50px;
+    border: 1px dashed transparent;
+    border-radius: 4px;
+    cursor: text;
+}
+
+#quote-product-table th span[contenteditable]:hover,
+#quote-product-table th span[contenteditable]:focus {
+    background-color: #f0f0f0;
+    border-color: #ccc;
+    outline: none;
+}
+
+.col-action-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #999;
+    font-size: 1em;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.col-action-btn:hover {
+    color: var(--primary-color);
+}
+
+.add-col-btn {
+    right: 5px;
+    font-size: 1.1em;
+}
+
+.delete-col-btn {
+    right: 25px;
+}
+
+.fill-col-btn {
+    right: 5px;
+}
+
+#quote-product-table td[contenteditable] {
+    background-color: #fdfdfd;
+}
+
+#quote-product-table td[contenteditable]:focus {
+    background-color: #fff;
+    outline: 2px solid var(--primary-color);
+    box-shadow: 0 0 5px rgba(26, 115, 232, 0.5);
+}
+
+#quote-product-table textarea.quote-item-specs {
+    font-size: 0.9em;
+    padding: 6px;
+    line-height: 1.4;
+    margin-top: 5px;
+    min-height: 50px;
+}
+
+#quote-product-table input.quote-item-input {
+    margin-bottom: 0;
+}
+
+#quote-product-table img {
+    max-width: 60px;
+    max-height: 60px;
+    display: block;
+    border-radius: 4px;
+}
+
 #product-manager .manager-container {
     display: grid;
     grid-template-columns: 1fr 1.5fr;
@@ -833,21 +948,6 @@ td .btn-delete-row {
     padding-top: 10px;
 }
 
-#quote-product-table img {
-    max-width: 60px;
-    max-height: 60px;
-    display: block;
-    border-radius: 4px;
-}
-
-#quote-product-table textarea.quote-item-specs {
-    font-size: 0.9em;
-    padding: 6px;
-    line-height: 1.4;
-    margin-top: 5px;
-}
-
-
 .currency-pair {
     display: flex;
     gap: 10px;
@@ -859,8 +959,7 @@ td .btn-delete-row {
     margin-bottom: 0;
 }
 
-
-/* --- 专业打印样式 V13.1 --- */
+/* --- 专业打印样式 V14.0 (最终版) --- */
 @media print {
     body {
         background-color: #fff !important;
@@ -880,12 +979,12 @@ td .btn-delete-row {
 
     @page {
         size: A4;
-        margin: 2cm 1.5cm;
+        margin: 1.8cm;
     }
 
     .print-container {
         font-family: Arial, sans-serif !important;
-        font-size: 10pt !important;
+        font-size: 9.5pt !important;
         color: #000 !important;
         background: #fff !important;
     }
@@ -903,11 +1002,11 @@ td .btn-delete-row {
         align-items: flex-start !important;
         border-bottom: 2px solid #000 !important;
         padding-bottom: 10px !important;
-        margin-bottom: 20px !important;
+        margin-bottom: 25px !important;
     }
 
     .print-header .seller-info h1 {
-        font-size: 18pt !important;
+        font-size: 16pt !important;
         font-weight: bold !important;
         margin: 0 0 5px 0 !important;
     }
@@ -924,8 +1023,8 @@ td .btn-delete-row {
     }
 
     .print-header .doc-title img {
-        max-width: 200px !important;
-        max-height: 60px !important;
+        max-width: 180px !important;
+        max-height: 55px !important;
         margin-bottom: 8px !important;
         display: block;
         margin-left: auto;
@@ -936,20 +1035,22 @@ td .btn-delete-row {
         font-weight: bold !important;
         text-align: right !important;
         margin: 0 !important;
+        color: #000;
     }
 
     .print-meta {
         display: flex !important;
         justify-content: space-between !important;
-        margin-bottom: 20px !important;
+        margin-bottom: 25px !important;
         width: 100%;
+        font-size: 9.5pt;
     }
 
     .print-meta .buyer-info,
     .print-meta .doc-info {
         width: 48% !important;
-        border: 1px solid #999 !important;
-        padding: 10px !important;
+        padding: 0 !important;
+        border: none !important;
     }
 
     .print-meta h3 {
@@ -957,27 +1058,28 @@ td .btn-delete-row {
         font-weight: bold !important;
         border-bottom: 1px solid #999 !important;
         padding-bottom: 4px !important;
-        margin-bottom: 6px !important;
-        display: block;
+        margin: 0 0 8px 0 !important;
     }
 
     .print-meta p {
-        font-size: 9.5pt !important;
         line-height: 1.5 !important;
-        margin: 2px 0 !important;
+        margin: 3px 0 !important;
         white-space: pre-wrap;
     }
 
-    .print-meta p strong {
+    .print-meta p .label {
         display: inline-block;
-        width: 80px;
+        width: 85px;
+        flex-shrink: 0;
         font-weight: bold !important;
+        vertical-align: top;
+        padding-right: 5px;
     }
 
     .print-table {
         width: 100% !important;
         border-collapse: collapse !important;
-        margin-bottom: 0 !important;
+        margin-bottom: 20px !important;
     }
 
     .print-table thead {
@@ -986,18 +1088,26 @@ td .btn-delete-row {
 
     .print-table th,
     .print-table td {
-        border: 1px solid #333 !important;
-        padding: 6px 8px !important;
-        text-align: center !important;
+        border: 1px solid #333;
+        padding: 5px 8px !important;
         vertical-align: top !important;
         word-break: break-word;
     }
 
+    .print-table tr.product-row td {
+        border-bottom: 1px dotted #ccc !important;
+    }
+
+    .print-table tbody tr:last-of-type.product-row td {
+        border-bottom: 1px solid #333 !important;
+    }
+
     .print-table th {
-        background-color: #e0e0e0 !important;
+        background-color: #f2f2f2 !important;
         color: #000 !important;
         font-size: 9pt !important;
         font-weight: bold !important;
+        text-align: center !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
@@ -1017,12 +1127,18 @@ td .btn-delete-row {
         font-weight: bold !important;
     }
 
+    .print-table td.center {
+        text-align: center !important;
+    }
 
     .print-table img {
-        max-width: 50px !important;
-        max-height: 50px !important;
+        max-width: 60px !important;
+        max-height: 60px !important;
         vertical-align: middle !important;
         border-radius: 4px;
+        border: 1px solid #ddd;
+        display: block;
+        margin: 0 auto;
     }
 
     .print-table .amount {
@@ -1030,39 +1146,72 @@ td .btn-delete-row {
         white-space: nowrap;
     }
 
-    .print-summary {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 0;
-        margin-bottom: 20px;
-    }
-
-    .print-summary table {
-        width: 45% !important;
-        border-collapse: collapse;
+    /* --- 新的总计行样式 --- */
+    .print-table .summary-row td {
+        border-left: 1px solid #333;
+        border-right: 1px solid #333;
         border-top: none;
-    }
-
-    .print-summary td {
-        padding: 5px 8px !important;
-        border: 1px solid #333;
-        border-top: none;
-    }
-
-    .print-summary td:last-child {
+        border-bottom: 1px dotted #ccc;
         text-align: right;
+        padding: 3px 8px !important;
+        /* 更紧凑的间距 */
     }
 
-    .print-summary .grand-total td {
-        font-weight: bold !important;
-        font-size: 11pt !important;
+    .print-table .summary-row td.no-border {
+        border: none !important;
     }
+
+    .print-table .summary-row td.label {
+        font-weight: bold;
+        text-align: right;
+        border-left: 1px solid #333;
+    }
+
+    .print-table .subtotal td.label,
+    .print-table .subtotal td.amount {
+        border-top: 1px solid #333 !important;
+    }
+
+    .print-table .grand-total td {
+        font-weight: bold !important;
+        font-size: 9.5pt !important;
+        /* 字体与正文一致 */
+        border-bottom: 1px solid #333 !important;
+        border-top: 1px solid #000 !important;
+        /* 不用过粗的线 */
+    }
+
+
+    /* 无边框表格样式 */
+    .print-container.no-borders .print-table th,
+    .print-container.no-borders .print-table td {
+        border: none !important;
+    }
+
+    .print-container.no-borders .print-table th {
+        border-bottom: 2px solid #000 !important;
+    }
+
+    .print-container.no-borders .print-table {
+        border-bottom: 1px solid #333;
+    }
+
+    .print-container.no-borders .print-table .summary-row td {
+        border-top: 1px dotted #ccc !important;
+    }
+
+    .print-container.no-borders .print-table .grand-total td {
+        border-top: 2px solid #000 !important;
+    }
+
 
     .print-terms {
+        margin-top: 25px !important;
         margin-bottom: 15px !important;
         font-size: 9pt !important;
         border: 1px solid #ccc;
         padding: 10px;
+        border-radius: 4px;
     }
 
     .print-terms h3 {
@@ -1083,20 +1232,37 @@ td .btn-delete-row {
     }
 
     .print-footer {
-        margin-top: 40px !important;
-        padding-top: 15px !important;
-        border-top: 1px solid #333 !important;
+        margin-top: 20px !important;
+        padding-top: 10px !important;
+        border-top: 2px solid #000 !important;
         display: flex !important;
         justify-content: space-between !important;
         align-items: flex-end;
         font-size: 10pt !important;
     }
 
+    .print-footer .prepared-by {
+        flex-grow: 1;
+        text-align: left;
+    }
+
     .print-footer .signature {
         text-align: right;
+        position: relative;
+        padding-right: 100px;
+        height: 80px;
     }
 
     .print-footer .signature p {
         margin-bottom: 40px;
+    }
+
+    .print-footer .seal-image {
+        position: absolute;
+        max-width: 110px;
+        max-height: 110px;
+        right: 0px;
+        bottom: 20px;
+        opacity: 0.8;
     }
 }

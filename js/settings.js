@@ -114,6 +114,7 @@ function handleSettingsSave(e) {
     };
     
     Object.assign(settings, newSettings);
+    console.log("%cSaving settings:", "color: blue; font-weight: bold;", newSettings);
     saveData("settings", settings);
     
     alert("设置已保存！");

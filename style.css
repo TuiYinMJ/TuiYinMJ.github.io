@@ -1,4 +1,4 @@
-/* --- 全局样式 V14.0 --- */
+/* --- 全局样式 V15.0 --- */
 :root {
     --primary-color: #1a73e8;
     --secondary-color: #5f6368;
@@ -522,7 +522,6 @@ input[type="file"] {
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
     background-color: #ffffff;
 }
 
@@ -531,6 +530,7 @@ table {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     overflow-x: auto;
+    margin-bottom: 20px;
 }
 
 
@@ -803,8 +803,7 @@ td .btn-delete-row {
 
 .pi-options .print-options-label input {
     width: auto;
-    margin-right: 6px;
-    vertical-align: middle;
+    margin: 0 6px 0 0;
 }
 
 #quote-product-table {
@@ -814,8 +813,29 @@ td .btn-delete-row {
 
 #quote-product-table th {
     position: relative;
-    padding-right: 50px !important;
+    padding-right: 55px !important;
     white-space: nowrap;
+}
+
+#quote-product-table th[draggable="true"] {
+    cursor: grab;
+}
+
+#quote-product-table th.dragging {
+    opacity: 0.5;
+}
+
+#quote-product-table th.drag-over {
+    border-left: 2px solid var(--primary-color);
+}
+
+.col-drag-handle {
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #ccc;
+    cursor: grab;
 }
 
 #quote-product-table th span[contenteditable] {
@@ -825,6 +845,10 @@ td .btn-delete-row {
     border: 1px dashed transparent;
     border-radius: 4px;
     cursor: text;
+}
+
+#quote-product-table th[draggable="true"] span[contenteditable] {
+    margin-left: 15px;
 }
 
 #quote-product-table th span[contenteditable]:hover,
@@ -878,10 +902,13 @@ td .btn-delete-row {
     line-height: 1.4;
     margin-top: 5px;
     min-height: 50px;
+    border-radius: 4px;
 }
 
 #quote-product-table input.quote-item-input {
     margin-bottom: 0;
+    padding: 8px;
+    border-radius: 4px;
 }
 
 #quote-product-table img {
@@ -959,7 +986,7 @@ td .btn-delete-row {
     margin-bottom: 0;
 }
 
-/* --- 专业打印样式 V14.0 (最终版) --- */
+/* --- 专业打印样式 V15.0 (最终版) --- */
 @media print {
     body {
         background-color: #fff !important;
@@ -1098,7 +1125,7 @@ td .btn-delete-row {
         border-bottom: 1px dotted #ccc !important;
     }
 
-    .print-table tbody tr:last-of-type.product-row td {
+    .print-table tbody tr:last-child.product-row td {
         border-bottom: 1px solid #333 !important;
     }
 
@@ -1180,7 +1207,6 @@ td .btn-delete-row {
         border-top: 1px solid #000 !important;
         /* 不用过粗的线 */
     }
-
 
     /* 无边框表格样式 */
     .print-container.no-borders .print-table th,

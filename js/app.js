@@ -9,9 +9,11 @@ import { initPiGenerator, selectCustomerInPiForm } from './pi_generator.js';
 document.addEventListener("DOMContentLoaded", () => {
 
     // --- 1. Load All Data ---
-    let settings = loadData("settings", {});
-    let products = loadData("products", []);
-    let customers = loadData("customers", []);
+    const settings = loadData("settings", {});
+    console.log("%cLoading settings:", "color: green; font-weight: bold;", settings);
+    
+    const products = loadData("products", []);
+    const customers = loadData("customers", []);
 
     // --- 2. Initialize All Modules ---
     initDashboard(customers);
@@ -19,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initProducts(products, settings);
     initCrm(customers);
     initPiGenerator(settings, products, customers);
+
 
     // --- 3. Setup Global Event Handlers (Navigation, Data I/O) ---
     const navLinks = queryAll(".nav-link");
@@ -38,19 +41,30 @@ document.addEventListener("DOMContentLoaded", () => {
         link.classList.add("active");
         modules.forEach((module) => module.classList.toggle("active", module.id === targetId));
 
-        // Pass fresh data to the moduleChanged event
-        notify('moduleChanged', { targetId, settings, products, customers });
+        const currentData = {
+            settings: loadData("settings", {}),
+            products: loadData("products", []),
+            customers: loadData("customers", [])
+        };
+        notify('moduleChanged', { targetId, ...currentData });
     }
     
     query('.sidebar-nav').addEventListener("click", handleNavClick);
 
     exportBtn.addEventListener("click", () => {
         try {
-            // Re-fetch data from localStorage to ensure it's the latest before exporting
             const currentSettings = loadData("settings", {});
             const currentProducts = loadData("products", []);
             const currentCustomers = loadData("customers", []);
-            const data = JSON.stringify({ settings: currentSettings, products: currentProducts, customers: currentCustomers }, null, 2);
+            const currentColumns = loadData("tableColumns", []);
+
+            const data = JSON.stringify({ 
+                settings: currentSettings, 
+                products: currentProducts, 
+                customers: currentCustomers,
+                tableColumns: currentColumns // Also save column layout
+            }, null, 2);
+
             const blob = new Blob([data], { type: "application/json" });
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
@@ -64,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     importInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
-        if (file && confirm("【警告】导入备份将覆盖所有现有数据（设置、商品、客户）！确定继续吗？")) {
+        if (file && confirm("【警告】导入备份将覆盖所有现有数据！确定继续吗？")) {
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
@@ -73,6 +87,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         saveData("settings", data.settings);
                         saveData("products", data.products);
                         saveData("customers", data.customers);
+                        if (data.tableColumns) {
+                             saveData("tableColumns", data.tableColumns);
+                        }
                         alert("数据导入成功！页面将自动刷新以应用更改。");
                         window.location.reload();
                     } else {
@@ -87,9 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
         e.target.value = "";
     });
 
-    // --- 4. Cross-Module Communication Handlers (The Fix) ---
+    // --- 4. Cross-Module Communication Handlers ---
     
-    // Request from CRM to open PI Generator for a customer
     document.addEventListener('requestPiGenerator', (e) => {
         const { customerId } = e.detail;
         const piLink = query('.nav-link[data-target="pi-generator"]');
@@ -100,14 +116,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 50);
     });
 
-    // Request from Dashboard to open CRM Modal for a customer
     document.addEventListener('requestCrmModal', (e) => {
         const { customerId } = e.detail;
         const crmLink = query('.nav-link[data-target="crm-manager"]');
         if (crmLink && !crmLink.classList.contains('active')) {
              crmLink.click();
         }
-        // Directly call the exported function from the CRM module
         openCustomerModal(customerId);
     });
 });

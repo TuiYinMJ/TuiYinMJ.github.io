@@ -7,16 +7,17 @@ let products = [];
 let customers = [];
 let quoteItems = [];
 let tableColumns = [];
+let draggedColumnId = null;
 
 // --- 默认列结构 ---
 const defaultColumns = [
-    { id: 'image', label: 'Image', type: 'standard', editable: false, width: '8%' },
-    { id: 'description', label: 'Description', type: 'standard', editable: false, width: 'auto' },
-    { id: 'qty', label: 'QTY', type: 'standard', editable: true, width: '8%' },
-    { id: 'unit', label: 'Unit', type: 'standard', editable: true, width: '8%' },
-    { id: 'unitPrice', label: 'Unit Price', type: 'standard', editable: true, width: '12%' },
-    { id: 'amount', label: 'Amount', type: 'standard', editable: false, width: '14%' },
-    { id: 'actions', label: '操作', type: 'actions', editable: false, width: '6%' },
+    { id: 'image', label: 'Image', type: 'standard', draggable: false, editable: false, width: '8%' },
+    { id: 'description', label: 'Description', type: 'standard', draggable: true, editable: true, width: 'auto' },
+    { id: 'qty', label: 'QTY', type: 'standard', draggable: true, editable: true, width: '8%' },
+    { id: 'unit', label: 'Unit', type: 'standard', draggable: true, editable: true, width: '8%' },
+    { id: 'unitPrice', label: 'Unit Price', type: 'standard', draggable: true, editable: true, width: '12%' },
+    { id: 'amount', label: 'Amount', type: 'standard', draggable: false, editable: false, width: '14%' },
+    { id: 'actions', label: '操作', type: 'actions', draggable: false, editable: false, width: '6%' },
 ];
 
 // --- DOM 缓存 ---
@@ -72,6 +73,13 @@ function renderTableHead() {
         const th = document.createElement('th');
         th.style.width = col.width || 'auto';
         th.dataset.colId = col.id;
+        th.draggable = col.draggable;
+
+        if (col.draggable) {
+            const dragHandle = document.createElement('i');
+            dragHandle.className = 'fas fa-grip-vertical col-drag-handle';
+            th.appendChild(dragHandle);
+        }
 
         const labelSpan = document.createElement('span');
         labelSpan.textContent = col.label;
@@ -84,6 +92,12 @@ function renderTableHead() {
                     saveData('tableColumns', tableColumns);
                 } else {
                     e.target.textContent = col.label;
+                }
+            });
+             labelSpan.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.target.blur();
                 }
             });
         }
@@ -107,7 +121,6 @@ function renderTableHead() {
             addBtn.title = '在此前方插入新列';
             th.appendChild(addBtn);
         }
-
         tr.appendChild(th);
     });
     tableHead.appendChild(tr);
@@ -125,6 +138,7 @@ function renderTableBody() {
 
             switch (col.id) {
                 case 'image':
+                    td.style.textAlign = 'center';
                     content = item.image ? `<img src="${item.image}" alt="${item.name}">` : '';
                     break;
                 case 'description':
@@ -194,7 +208,7 @@ function handleTableHeadClick(e) {
     if (target.classList.contains('add-col-btn')) {
         const colName = prompt("请输入新列的名称:", "自定义列");
         if (colName) {
-            const newCol = { id: `custom_${Date.now()}`, label: colName, type: 'custom', editable: true, width: '120px' };
+            const newCol = { id: `custom_${Date.now()}`, label: colName, type: 'custom', draggable: true, editable: true, width: '120px' };
             const actionsIndex = tableColumns.findIndex(c => c.type === 'actions');
             tableColumns.splice(actionsIndex, 0, newCol);
             quoteItems.forEach(item => { if(!item.customData) item.customData = {}; item.customData[newCol.id] = ''; });
@@ -407,6 +421,50 @@ function setInitialFormValues() {
     populateLinkCustomerSelect();
 }
 
+function handleDragStart(e) {
+    const th = e.target.closest('th');
+    if (!th || !th.draggable) return;
+    draggedColumnId = th.dataset.colId;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', draggedColumnId);
+    setTimeout(() => {
+        th.classList.add('dragging');
+    }, 0);
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    const th = e.target.closest('th');
+    if (!th || !th.draggable) return;
+    th.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+    e.target.closest('th')?.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const targetTh = e.target.closest('th');
+    targetTh?.classList.remove('drag-over');
+    
+    const droppedOnColumnId = targetTh?.dataset.colId;
+    if (!droppedOnColumnId || draggedColumnId === droppedOnColumnId) {
+        document.querySelector('.dragging')?.classList.remove('dragging');
+        return;
+    }
+
+    const draggedIndex = tableColumns.findIndex(c => c.id === draggedColumnId);
+    const targetIndex = tableColumns.findIndex(c => c.id === droppedOnColumnId);
+
+    if (draggedIndex > -1 && targetIndex > -1) {
+        const [draggedItem] = tableColumns.splice(draggedIndex, 1);
+        tableColumns.splice(targetIndex, 0, draggedItem);
+        renderTable();
+    }
+    draggedColumnId = null;
+}
+
 export function selectCustomerInPiForm(customerId) {
     linkCustomerSelect.value = customerId;
     linkCustomerSelect.dispatchEvent(new Event('change'));
@@ -422,18 +480,22 @@ export function initPiGenerator(initialSettings, initialProducts, initialCustome
     piForm.addEventListener("reset", resetForm);
     
     tableHead.addEventListener('click', handleTableHeadClick);
+    tableBody.addEventListener('click', handleTableBodyEvent);
     tableBody.addEventListener('input', handleTableBodyEvent);
     tableBody.addEventListener('blur', handleTableBodyEvent, true);
+
+    tableHead.addEventListener('dragstart', handleDragStart);
+    tableHead.addEventListener('dragover', handleDragOver);
+    tableHead.addEventListener('dragleave', handleDragLeave);
+    tableHead.addEventListener('drop', handleDrop);
     
     generateDocIdBtn.addEventListener("click", generateDocId);
-    exportExcelBtn.addEventListener("click", () => alert('Excel导出功能暂不支持动态列。')); // Temporarily disable
+    exportExcelBtn.addEventListener("click", () => alert('Excel导出功能暂不支持动态列。'));
     
     linkCustomerSelect.addEventListener("change", (e) => {
         const customerId = e.target.value;
         if (!customerId) {
-            buyerNameInput.value = "";
-            buyerAddressInput.value = "";
-            buyerAttnInput.value = "";
+            buyerNameInput.value = ""; buyerAddressInput.value = ""; buyerAttnInput.value = "";
             return;
         }
         const customer = customers.find((c) => c.id === customerId);
@@ -479,12 +541,7 @@ export function initPiGenerator(initialSettings, initialProducts, initialCustome
     document.addEventListener('settingsUpdated', (e) => { settings = e.detail.settings; renderCurrencyOptions(); renderTable(); });
     document.addEventListener('productsUpdated', (e) => { products = e.detail.products; });
     document.addEventListener('customersUpdated', (e) => { customers = e.detail.customers; populateLinkCustomerSelect(); });
-
-    document.addEventListener('moduleChanged', (e) => {
-        if (e.detail.targetId === 'pi-generator') {
-            setInitialFormValues();
-        }
-    });
+    document.addEventListener('moduleChanged', (e) => { if (e.detail.targetId === 'pi-generator') { setInitialFormValues(); } });
 
     renderTable();
 }

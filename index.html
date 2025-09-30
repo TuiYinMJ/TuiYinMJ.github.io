@@ -3,74 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商业模式画布</title>
+    <title>商业策划工具箱</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>商业模式画布</h1>
-            <div class="controls">
-                <button id="addNoteBtn" class="btn">📝 添加便利贴</button>
-                <button id="saveBtn" class="btn">💾 保存数据</button>
-                <button id="exportBtn" class="btn">🖼️ 导出PNG</button>
-                <button id="clearBtn" class="btn">🗑️ 清空画布</button>
-                <button id="templateBtn" class="btn">📋 使用模板</button>
+    <div class="app-container">
+        <!-- 侧边栏导航 -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>商业策划工具箱</h2>
             </div>
-        </header>
+            <ul class="sidebar-menu">
+                <li><a href="#business-model-canvas" class="nav-link active">商业模式画布</a></li>
+                <li><a href="#swot-analysis" class="nav-link">SWOT分析</a></li>
+                <li><a href="#value-proposition" class="nav-link">价值主张画布</a></li>
+                <li><a href="#lean-canvas" class="nav-link">精益画布</a></li>
+                <li><a href="#business-assessment" class="nav-link">商业模式评估</a></li>
+                <li><a href="#strategy-framework" class="nav-link">战略框架</a></li>
+                <li><a href="#market-analysis" class="nav-link">市场分析</a></li>
+                <li><a href="#competitive-analysis" class="nav-link">竞争分析</a></li>
+                <li><a href="#financial-planning" class="nav-link">财务规划</a></li>
+                <li><a href="#business-plan" class="nav-link">商业计划书</a></li>
+            </ul>
+        </nav>
 
-        <div class="canvas-grid">
-            <!-- 第一行 -->
-            <div class="section" id="key-partners" data-section="key-partners">
-                <h3>重要伙伴</h3>
-                <div class="section-description">供应商、分销商、战略联盟等关键合作伙伴</div>
-                <div class="notes-container"></div>
-            </div>
-            <div class="section" id="key-activities" data-section="key-activities">
-                <h3>关键业务</h3>
-                <div class="section-description">实现价值主张必须执行的最重要活动</div>
-                <div class="notes-container"></div>
-            </div>
-            <div class="section" id="value-propositions" data-section="value-propositions">
-                <h3>价值主张</h3>
-                <div class="section-description">为客户创造价值的系列产品和服务</div>
-                <div class="notes-container"></div>
-            </div>
-            <div class="section" id="customer-relationships" data-section="customer-relationships">
-                <h3>客户关系</h3>
-                <div class="section-description">公司与特定客户群体建立的关系类型</div>
-                <div class="notes-container"></div>
-            </div>
-            <div class="section" id="customer-segments" data-section="customer-segments">
-                <h3>客户细分</h3>
-                <div class="section-description">公司所瞄准的消费者群体</div>
-                <div class="notes-container"></div>
-            </div>
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 商业模式画布页面 -->
+            <section id="business-model-canvas" class="page active">
+                <header class="page-header">
+                    <h1>商业模式画布</h1>
+                    <div class="page-controls">
+                        <button id="addNoteBtn" class="btn">📝 添加便利贴</button>
+                        <button id="exportCanvasBtn" class="btn">🖼️ 导出画布</button>
+                        <button id="clearCanvasBtn" class="btn">🗑️ 清空画布</button>
+                        <button id="templateBtn" class="btn">📋 使用模板</button>
+                    </div>
+                </header>
 
-            <!-- 第二行 -->
-            <div class="section" id="key-resources" data-section="key-resources">
-                <h3>核心资源</h3>
-                <div class="section-description">让商业模式有效运转所必需的最重要因素</div>
-                <div class="notes-container"></div>
-            </div>
-            <div class="section" id="channels" data-section="channels">
-                <h3>渠道通路</h3>
-                <div class="section-description">公司如何沟通、接触其客户细分而传递其价值主张</div>
-                <div class="notes-container"></div>
-            </div>
+                <div class="canvas-container">
+                    <div class="business-model-canvas">
+                        <!-- 第一行 -->
+                        <div class="canvas-section" id="key-partners" data-section="key-partners">
+                            <h3>重要伙伴</h3>
+                            <div class="section-description">供应商、分销商、战略联盟等关键合作伙伴</div>
+                            <div class="notes-container"></div>
+                        </div>
+                        <div class="canvas-section" id="key-activities" data-section="key-activities">
+                            <h3>关键业务</h3>
+                            <div class="section-description">实现价值主张必须执行的最重要活动</div>
+                            <div class="notes-container"></div>
+                        </div>
+                        <div class="canvas-section" id="value-propositions" data-section="value-propositions">
+                            <h3>价值主张</h3>
+                            <div class="section-description">为客户创造价值的系列产品和服务</div>
+                            <div class="notes-container"></div>
+                        </div>
+                        <div class="canvas-section" id="customer-relationships" data-section="customer-relationships">
+                            <h3>客户关系</h3>
+                            <div class="section-description">公司与特定客户群体建立的关系类型</div>
+                            <div class="notes-container"></div>
+                        </div>
+                        <div class="canvas-section" id="customer-segments" data-section="customer-segments">
+                            <h3>客户细分</h3>
+                            <div class="section-description">公司所瞄准的消费者群体</div>
+                            <div class="notes-container"></div>
+                        </div>
 
-            <!-- 第三行 -->
-            <div class="section" id="cost-structure" data-section="cost-structure">
-                <h3>成本结构</h3>
-                <div class="section-description">运营一个商业模式所引发的所有成本</div>
-                <div class="notes-container"></div>
-            </div>
-            <div class="section" id="revenue-streams" data-section="revenue-streams">
-                <h3>收入来源</h3>
-                <div class="section-description">公司从每个客户群体中获取的现金收入</div>
-                <div class="notes-container"></div>
-            </div>
-        </div>
+                        <!-- 第二行 -->
+                        <div class="canvas-section" id="key-resources" data-section="key-resources">
+                            <h3>核心资源</h3>
+                            <div class="section-description">让商业模式有效运转所必需的最重要因素</div>
+                            <div class="notes-container"></div>
+                        </div>
+                        <div class="canvas-section" id="channels" data-section="channels">
+                            <h3>渠道通路</h3>
+                            <div class="section-description">公司如何沟通、接触其客户细分而传递其价值主张</div>
+                            <div class="notes-container"></div>
+                        </div>
+
+                        <!-- 第三行 -->
+                        <div class="canvas-section" id="cost-structure" data-section="cost-structure">
+                            <h3>成本结构</h3>
+                            <div class="section-description">运营一个商业模式所引发的所有成本</div>
+                            <div class="notes-container"></div>
+                        </div>
+                        <div class="canvas-section" id="revenue-streams" data-section="revenue-streams">
+                            <h3>收入来源</h3>
+                            <div class="section-description">公司从每个客户群体中获取的现金收入</div>
+                            <div class="notes-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SWOT分析页面 -->
+            <section id="swot-analysis" class="page">
+                <header class="page-header">
+                    <h1>SWOT分析</h1>
+                    <div class="page-controls">
+                        <button class="btn" onclick="addSWOTItem()">➕ 添加项目</button>
+                        <button class="btn" onclick="exportSWOT()">📄 导出分析</button>
+                    </div>
+                </header>
+                <div class="swot-grid">
+                    <div class="swot-quadrant strengths">
+                        <h3>优势 (Strengths)</h3>
+                        <div class="swot-items"></div>
+                    </div>
+                    <div class="swot-quadrant weaknesses">
+                        <h3>劣势 (Weaknesses)</h3>
+                        <div class="swot-items"></div>
+                    </div>
+                    <div class="swot-quadrant opportunities">
+                        <h3>机会 (Opportunities)</h3>
+                        <div class="swot-items"></div>
+                    </div>
+                    <div class="swot-quadrant threats">
+                        <h3>威胁 (Threats)</h3>
+                        <div class="swot-items"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 价值主张画布页面 -->
+            <section id="value-proposition" class="page">
+                <header class="page-header">
+                    <h1>价值主张画布</h1>
+                    <div class="page-controls">
+                        <button class="btn">📝 编辑价值主张</button>
+                        <button class="btn">📄 导出画布</button>
+                    </div>
+                </header>
+                <div class="value-proposition-canvas">
+                    <!-- 价值主张画布内容 -->
+                    <div class="vp-section customer-profile">
+                        <h3>客户画像</h3>
+                        <div class="vp-items">
+                            <div class="vp-item">客户任务</div>
+                            <div class="vp-item">痛点</div>
+                            <div class="vp-item">收益</div>
+                        </div>
+                    </div>
+                    <div class="vp-section value-map">
+                        <h3>价值地图</h3>
+                        <div class="vp-items">
+                            <div class="vp-item">产品与服务</div>
+                            <div class="vp-item">痛点缓解</div>
+                            <div class="vp-item">收益创造</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 商业模式评估页面 -->
+            <section id="business-assessment" class="page">
+                <header class="page-header">
+                    <h1>商业模式评估</h1>
+                </header>
+                <div class="assessment-container">
+                    <div class="assessment-criteria">
+                        <h3>评估标准</h3>
+                        <div class="criteria-list">
+                            <div class="criterion">
+                                <label>价值主张清晰度</label>
+                                <div class="rating" data-criterion="value-clarity">★★★★★</div>
+                            </div>
+                            <div class="criterion">
+                                <label>市场可行性</label>
+                                <div class="rating" data-criterion="market-feasibility">★★★★★</div>
+                            </div>
+                            <div class="criterion">
+                                <label>盈利模式</label>
+                                <div class="rating" data-criterion="profit-model">★★★★★</div>
+                            </div>
+                            <div class="criterion">
+                                <label>竞争优势</label>
+                                <div class="rating" data-criterion="competitive-advantage">★★★★★</div>
+                            </div>
+                            <div class="criterion">
+                                <label>可扩展性</label>
+                                <div class="rating" data-criterion="scalability">★★★★★</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="assessment-results">
+                        <h3>评估结果</h3>
+                        <div class="score-card">
+                            <div class="total-score">75/100</div>
+                            <div class="score-breakdown">
+                                <div class="score-item">价值主张: 8/10</div>
+                                <div class="score-item">市场可行性: 7/10</div>
+                                <div class="score-item">盈利模式: 6/10</div>
+                                <div class="score-item">竞争优势: 8/10</div>
+                                <div class="score-item">可扩展性: 6/10</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 其他页面占位符 -->
+            <section id="lean-canvas" class="page">
+                <header class="page-header">
+                    <h1>精益画布</h1>
+                    <p>单页商业计划工具，专注于问题解决方案</p>
+                </header>
+                <!-- 精益画布内容 -->
+            </section>
+
+            <section id="strategy-framework" class="page">
+                <header class="page-header">
+                    <h1>战略框架</h1>
+                    <p>基于《商战》、《定位》等经典战略理论</p>
+                </header>
+                <!-- 战略框架内容 -->
+            </section>
+
+            <section id="market-analysis" class="page">
+                <header class="page-header">
+                    <h1>市场分析</h1>
+                    <p>市场规模、趋势、细分市场分析</p>
+                </header>
+                <!-- 市场分析内容 -->
+            </section>
+
+            <section id="competitive-analysis" class="page">
+                <header class="page-header">
+                    <h1>竞争分析</h1>
+                    <p>竞争对手分析、竞争优势构建</p>
+                </header>
+                <!-- 竞争分析内容 -->
+            </section>
+
+            <section id="financial-planning" class="page">
+                <header class="page-header">
+                    <h1>财务规划</h1>
+                    <p>收入预测、成本分析、现金流管理</p>
+                </header>
+                <!-- 财务规划内容 -->
+            </section>
+
+            <section id="business-plan" class="page">
+                <header class="page-header">
+                    <h1>商业计划书</h1>
+                    <p>完整的商业计划书模板和指导</p>
+                </header>
+                <!-- 商业计划书内容 -->
+            </section>
+        </main>
     </div>
 
     <!-- 添加便利贴的模态框 -->

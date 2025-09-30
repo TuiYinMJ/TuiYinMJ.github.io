@@ -1,46 +1,50 @@
-class BusinessModelCanvas {
+class BusinessStrategyTool {
     constructor() {
+        this.currentPage = 'business-model-canvas';
         this.notes = this.loadNotes();
+        this.swotItems = this.loadSWOTItems();
         this.init();
     }
 
     init() {
         this.bindEvents();
         this.renderNotes();
+        this.renderSWOTItems();
+        this.showPage(this.currentPage);
     }
 
     bindEvents() {
-        // 添加便利贴按钮
+        // 导航链接点击事件
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = link.getAttribute('href').substring(1);
+                this.showPage(pageId);
+            });
+        });
+
+        // 商业模式画布按钮事件
         document.getElementById('addNoteBtn').addEventListener('click', () => {
             this.openModal();
         });
 
-        // 保存按钮
-        document.getElementById('saveBtn').addEventListener('click', () => {
-            this.saveCanvas();
+        document.getElementById('exportCanvasBtn').addEventListener('click', () => {
+            this.exportCanvas();
         });
 
-        // 导出PNG按钮
-        document.getElementById('exportBtn').addEventListener('click', () => {
-            this.exportToPNG();
-        });
-
-        // 清空按钮
-        document.getElementById('clearBtn').addEventListener('click', () => {
+        document.getElementById('clearCanvasBtn').addEventListener('click', () => {
             this.clearCanvas();
         });
 
-        // 模板按钮
         document.getElementById('templateBtn').addEventListener('click', () => {
             this.showTemplates();
         });
 
-        // 模态框关闭按钮
+        // 模态框事件
         document.querySelector('.close').addEventListener('click', () => {
             this.closeModal();
         });
 
-        // 点击模态框外部关闭
         window.addEventListener('click', (e) => {
             const modal = document.getElementById('noteModal');
             if (e.target === modal) {
@@ -48,7 +52,6 @@ class BusinessModelCanvas {
             }
         });
 
-        // 便利贴表单提交
         document.getElementById('noteForm').addEventListener('submit', (e) => {
             e.preventDefault();
             this.addNote();
@@ -56,11 +59,30 @@ class BusinessModelCanvas {
 
         // 拖拽功能
         this.enableDragAndDrop();
-
-        // 双击编辑便利贴
         this.enableDoubleClickEdit();
     }
 
+    showPage(pageId) {
+        // 隐藏所有页面
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+
+        // 移除所有导航链接的激活状态
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
+
+        // 显示目标页面
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            document.querySelector(`[href="#${pageId}"]`).classList.add('active');
+            this.currentPage = pageId;
+        }
+    }
+
+    // 商业模式画布功能
     openModal() {
         document.getElementById('noteModal').style.display = 'block';
         document.getElementById('noteContent').focus();
@@ -93,8 +115,6 @@ class BusinessModelCanvas {
         this.saveNotes();
         this.renderNotes();
         this.closeModal();
-
-        // 显示成功提示
         this.showMessage('便利贴添加成功！', 'success');
     }
 
@@ -108,12 +128,10 @@ class BusinessModelCanvas {
     }
 
     renderNotes() {
-        // 清空所有区域的便利贴
         document.querySelectorAll('.notes-container').forEach(container => {
             container.innerHTML = '';
         });
 
-        // 渲染便利贴
         this.notes.forEach(note => {
             const container = document.querySelector(`[data-section="${note.section}"] .notes-container`);
             if (container) {
@@ -129,12 +147,10 @@ class BusinessModelCanvas {
         noteDiv.setAttribute('data-note-id', note.id);
         noteDiv.setAttribute('draggable', 'true');
 
-        // 便利贴内容
         const content = document.createElement('div');
         content.textContent = note.content;
         content.className = 'note-content';
 
-        // 删除按钮
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = '×';
@@ -184,11 +200,10 @@ class BusinessModelCanvas {
 
         document.addEventListener('drop', (e) => {
             e.preventDefault();
-            if (draggedNote && e.target.classList.contains('section')) {
+            if (draggedNote && e.target.classList.contains('canvas-section')) {
                 const section = e.target.getAttribute('data-section');
                 const noteId = draggedNote.getAttribute('data-note-id');
                 
-                // 更新便利贴的区域
                 const noteIndex = this.notes.findIndex(note => note.id === noteId);
                 if (noteIndex !== -1) {
                     this.notes[noteIndex].section = section;
@@ -198,130 +213,6 @@ class BusinessModelCanvas {
                 }
             }
         });
-    }
-
-    saveCanvas() {
-        this.saveNotes();
-        this.showMessage('画布已保存！', 'success');
-        
-        // 创建下载链接
-        const dataStr = JSON.stringify(this.notes, null, 2);
-        const dataBlob = new Blob([dataStr], {type: 'application/json'});
-        const url = URL.createObjectURL(dataBlob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `商业模式画布_${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
-
-    clearCanvas() {
-        if (confirm('确定要清空整个画布吗？所有便利贴将被删除！')) {
-            this.notes = [];
-            this.saveNotes();
-            this.renderNotes();
-            this.showMessage('画布已清空', 'info');
-        }
-    }
-
-    saveNotes() {
-        localStorage.setItem('businessModelCanvas', JSON.stringify(this.notes));
-    }
-
-    loadNotes() {
-        const saved = localStorage.getItem('businessModelCanvas');
-        return saved ? JSON.parse(saved) : [];
-    }
-
-    exportToPNG() {
-        this.showMessage('正在生成PNG图片...', 'info');
-        
-        // 使用html2canvas库来截图
-        if (typeof html2canvas === 'undefined') {
-            // 动态加载html2canvas库
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-            script.onload = () => {
-                this.captureCanvas();
-            };
-            document.head.appendChild(script);
-        } else {
-            this.captureCanvas();
-        }
-    }
-
-    captureCanvas() {
-        const container = document.querySelector('.container');
-        
-        html2canvas(container, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#667eea'
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `商业模式画布_${new Date().toISOString().split('T')[0]}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            this.showMessage('PNG图片导出成功！', 'success');
-        }).catch(error => {
-            console.error('导出PNG失败:', error);
-            this.showMessage('导出失败，请重试', 'error');
-        });
-    }
-
-    showTemplates() {
-        const templates = {
-            '电商平台': [
-                { section: 'value-propositions', content: '便捷的在线购物体验', color: '#ffeb3b' },
-                { section: 'value-propositions', content: '丰富的商品选择', color: '#ffeb3b' },
-                { section: 'customer-segments', content: '网购消费者', color: '#2196f3' },
-                { section: 'customer-segments', content: '年轻白领', color: '#2196f3' },
-                { section: 'channels', content: '官方网站', color: '#4caf50' },
-                { section: 'channels', content: '移动APP', color: '#4caf50' },
-                { section: 'revenue-streams', content: '商品销售佣金', color: '#ff9800' },
-                { section: 'revenue-streams', content: '广告收入', color: '#ff9800' }
-            ],
-            'SaaS服务': [
-                { section: 'value-propositions', content: '云端软件服务', color: '#ffeb3b' },
-                { section: 'value-propositions', content: '自动更新和维护', color: '#ffeb3b' },
-                { section: 'customer-segments', content: '中小企业', color: '#2196f3' },
-                { section: 'customer-relationships', content: '订阅制服务', color: '#e91e63' },
-                { section: 'revenue-streams', content: '月费/年费订阅', color: '#ff9800' },
-                { section: 'key-activities', content: '软件开发', color: '#4caf50' },
-                { section: 'key-activities', content: '客户支持', color: '#4caf50' }
-            ],
-            '内容创作者': [
-                { section: 'value-propositions', content: '优质原创内容', color: '#ffeb3b' },
-                { section: 'value-propositions', content: '专业知识分享', color: '#ffeb3b' },
-                { section: 'customer-segments', content: '粉丝和订阅者', color: '#2196f3' },
-                { section: 'channels', content: '社交媒体平台', color: '#4caf50' },
-                { section: 'channels', content: '视频平台', color: '#4caf50' },
-                { section: 'revenue-streams', content: '广告分成', color: '#ff9800' },
-                { section: 'revenue-streams', content: '品牌合作', color: '#ff9800' },
-                { section: 'revenue-streams', content: '付费内容', color: '#ff9800' }
-            ]
-        };
-
-        const templateNames = Object.keys(templates);
-        const selectedTemplate = prompt(`选择模板:\n${templateNames.map((name, index) => `${index + 1}. ${name}`).join('\n')}\n\n输入模板编号:`);
-        
-        if (selectedTemplate && templateNames[selectedTemplate - 1]) {
-            const templateName = templateNames[selectedTemplate - 1];
-            if (confirm(`确定要使用"${templateName}"模板吗？这将替换当前所有便利贴。`)) {
-                this.notes = templates[templateName].map(note => ({
-                    ...note,
-                    id: Date.now().toString() + Math.random(),
-                    timestamp: new Date().toISOString()
-                }));
-                this.saveNotes();
-                this.renderNotes();
-                this.showMessage(`"${templateName}"模板已加载`, 'success');
-            }
-        }
     }
 
     enableDoubleClickEdit() {
@@ -349,8 +240,214 @@ class BusinessModelCanvas {
         }
     }
 
+    exportCanvas() {
+        this.showMessage('正在生成画布图片...', 'info');
+        
+        if (typeof html2canvas === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            script.onload = () => {
+                this.captureCanvas();
+            };
+            document.head.appendChild(script);
+        } else {
+            this.captureCanvas();
+        }
+    }
+
+    captureCanvas() {
+        const canvasElement = document.querySelector('.business-model-canvas');
+        
+        html2canvas(canvasElement, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#667eea'
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `商业模式画布_${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            this.showMessage('画布图片导出成功！', 'success');
+        }).catch(error => {
+            console.error('导出失败:', error);
+            this.showMessage('导出失败，请重试', 'error');
+        });
+    }
+
+    clearCanvas() {
+        if (confirm('确定要清空整个画布吗？所有便利贴将被删除！')) {
+            this.notes = [];
+            this.saveNotes();
+            this.renderNotes();
+            this.showMessage('画布已清空', 'info');
+        }
+    }
+
+    showTemplates() {
+        const templates = {
+            '电商平台': [
+                { section: 'value-propositions', content: '便捷的在线购物体验', color: '#ffeb3b' },
+                { section: 'value-propositions', content: '丰富的商品选择', color: '#ffeb3b' },
+                { section: 'customer-segments', content: '网购消费者', color: '#2196f3' },
+                { section: 'customer-segments', content: '年轻白领', color: '#2196f3' },
+                { section: 'channels', content: '官方网站', color: '#4caf50' },
+                { section: 'channels', content: '移动APP', color: '#4caf50' },
+                { section: 'revenue-streams', content: '商品销售佣金', color: '#ff9800' },
+                { section: 'revenue-streams', content: '广告收入', color: '#ff9800' }
+            ],
+            'SaaS服务': [
+                { section: 'value-propositions', content: '云端软件服务', color: '#ffeb3b' },
+                { section: 'value-propositions', content: '自动更新和维护', color: '#ffeb3b' },
+                { section: 'customer-segments', content: '中小企业', color: '#2196f3' },
+                { section: 'customer-relationships', content: '订阅制服务', color: '#e91e63' },
+                { section: 'revenue-streams', content: '月费/年费订阅', color: '#ff9800' },
+                { section: 'key-activities', content: '软件开发', color: '#4caf50' },
+                { section: 'key-activities', content: '客户支持', color: '#4caf50' }
+            ]
+        };
+
+        const templateNames = Object.keys(templates);
+        const selectedTemplate = prompt(`选择模板:\n${templateNames.map((name, index) => `${index + 1}. ${name}`).join('\n')}\n\n输入模板编号:`);
+        
+        if (selectedTemplate && templateNames[selectedTemplate - 1]) {
+            const templateName = templateNames[selectedTemplate - 1];
+            if (confirm(`确定要使用"${templateName}"模板吗？这将替换当前所有便利贴。`)) {
+                this.notes = templates[templateName].map(note => ({
+                    ...note,
+                    id: Date.now().toString() + Math.random(),
+                    timestamp: new Date().toISOString()
+                }));
+                this.saveNotes();
+                this.renderNotes();
+                this.showMessage(`"${templateName}"模板已加载`, 'success');
+            }
+        }
+    }
+
+    // SWOT分析功能
+    addSWOTItem() {
+        const quadrant = prompt('选择象限:\n1. 优势\n2. 劣势\n3. 机会\n4. 威胁\n\n输入象限编号:');
+        const content = prompt('输入项目内容:');
+        
+        if (quadrant && content) {
+            const quadrants = ['strengths', 'weaknesses', 'opportunities', 'threats'];
+            const selectedQuadrant = quadrants[parseInt(quadrant) - 1];
+            
+            if (selectedQuadrant) {
+                const item = {
+                    id: Date.now().toString(),
+                    quadrant: selectedQuadrant,
+                    content: content,
+                    timestamp: new Date().toISOString()
+                };
+                
+                this.swotItems.push(item);
+                this.saveSWOTItems();
+                this.renderSWOTItems();
+                this.showMessage('SWOT项目已添加', 'success');
+            }
+        }
+    }
+
+    renderSWOTItems() {
+        document.querySelectorAll('.swot-items').forEach(container => {
+            container.innerHTML = '';
+        });
+
+        this.swotItems.forEach(item => {
+            const container = document.querySelector(`.${item.quadrant} .swot-items`);
+            if (container) {
+                const itemElement = this.createSWOTItemElement(item);
+                container.appendChild(itemElement);
+            }
+        });
+    }
+
+    createSWOTItemElement(item) {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'swot-item';
+        itemDiv.setAttribute('data-item-id', item.id);
+        itemDiv.textContent = item.content;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.title = '删除';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.deleteSWOTItem(item.id);
+        });
+
+        itemDiv.appendChild(deleteBtn);
+        return itemDiv;
+    }
+
+    deleteSWOTItem(itemId) {
+        if (confirm('确定要删除这个项目吗？')) {
+            this.swotItems = this.swotItems.filter(item => item.id !== itemId);
+            this.saveSWOTItems();
+            this.renderSWOTItems();
+            this.showMessage('项目已删除', 'info');
+        }
+    }
+
+    exportSWOT() {
+        this.showMessage('正在生成SWOT分析图片...', 'info');
+        
+        if (typeof html2canvas === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            script.onload = () => {
+                this.captureSWOT();
+            };
+            document.head.appendChild(script);
+        } else {
+            this.captureSWOT();
+        }
+    }
+
+    captureSWOT() {
+        const swotElement = document.querySelector('.swot-grid');
+        
+        html2canvas(swotElement, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#667eea'
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `SWOT分析_${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            this.showMessage('SWOT分析图片导出成功！', 'success');
+        }).catch(error => {
+            console.error('导出失败:', error);
+            this.showMessage('导出失败，请重试', 'error');
+        });
+    }
+
+    // 数据存储功能
+    saveNotes() {
+        localStorage.setItem('businessModelCanvas', JSON.stringify(this.notes));
+    }
+
+    loadNotes() {
+        const saved = localStorage.getItem('businessModelCanvas');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    saveSWOTItems() {
+        localStorage.setItem('swotAnalysis', JSON.stringify(this.swotItems));
+    }
+
+    loadSWOTItems() {
+        const saved = localStorage.getItem('swotAnalysis');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    // 消息提示功能
     showMessage(message, type = 'info') {
-        // 创建消息元素
         const messageDiv = document.createElement('div');
         messageDiv.textContent = message;
         messageDiv.style.cssText = `
@@ -368,7 +465,6 @@ class BusinessModelCanvas {
             font-size: 14px;
         `;
 
-        // 设置颜色
         const colors = {
             success: '#27ae60',
             error: '#e74c3c',
@@ -379,12 +475,10 @@ class BusinessModelCanvas {
 
         document.body.appendChild(messageDiv);
 
-        // 显示动画
         setTimeout(() => {
             messageDiv.style.transform = 'translateX(0)';
         }, 100);
 
-        // 自动隐藏
         setTimeout(() => {
             messageDiv.style.transform = 'translateX(100%)';
             setTimeout(() => {
@@ -396,15 +490,22 @@ class BusinessModelCanvas {
     }
 }
 
+// 全局函数
+function addSWOTItem() {
+    window.businessStrategyTool.addSWOTItem();
+}
+
+function exportSWOT() {
+    window.businessStrategyTool.exportSWOT();
+}
+
 // 键盘快捷键
 document.addEventListener('keydown', (e) => {
-    // Ctrl+N 或 Cmd+N 添加便利贴
     if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
         e.preventDefault();
         document.getElementById('addNoteBtn').click();
     }
     
-    // Escape 关闭模态框
     if (e.key === 'Escape') {
         const modal = document.getElementById('noteModal');
         if (modal.style.display === 'block') {
@@ -415,10 +516,10 @@ document.addEventListener('keydown', (e) => {
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
-    new BusinessModelCanvas();
+    window.businessStrategyTool = new BusinessStrategyTool();
 });
 
-// 添加一些示例数据（首次使用时）
+// 添加示例数据（首次使用时）
 if (!localStorage.getItem('businessModelCanvas') && localStorage.getItem('firstVisit') === null) {
     const exampleNotes = [
         {
@@ -433,13 +534,6 @@ if (!localStorage.getItem('businessModelCanvas') && localStorage.getItem('firstV
             section: 'customer-segments',
             content: '年轻专业人士',
             color: '#2196f3',
-            timestamp: new Date().toISOString()
-        },
-        {
-            id: '3',
-            section: 'revenue-streams',
-            content: '产品销售',
-            color: '#4caf50',
             timestamp: new Date().toISOString()
         }
     ];

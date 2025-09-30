@@ -107,7 +107,7 @@ class BusinessStrategyTool {
         const color = document.getElementById('noteColor').value;
 
         if (!content) {
-            this.showMessage('Please enter note content!', 'error');
+            this.showMessage('请输入便利贴内容！', 'error');
             return;
         }
 
@@ -123,15 +123,15 @@ class BusinessStrategyTool {
         this.saveNotes();
         this.renderNotes();
         this.closeModal();
-        this.showMessage('Note added successfully!', 'success');
+        this.showMessage('便利贴添加成功！', 'success');
     }
 
     deleteNote(noteId) {
-        if (confirm('Are you sure you want to delete this note?')) {
+        if (confirm('确定要删除这个便利贴吗？')) {
             this.notes = this.notes.filter(note => note.id !== noteId);
             this.saveNotes();
             this.renderNotes();
-            this.showMessage('Note deleted', 'info');
+            this.showMessage('便利贴已删除', 'info');
         }
     }
 

@@ -1,0 +1,7 @@
+{
+  "name": "business-analysis-tool",
+  "version": "1.0.0",
+  "description": "商业模式分析工具套件",
+  "type": "module",
+  "private": true
+}

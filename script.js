@@ -833,7 +833,7 @@ class BusinessStrategyTool {
         if (confirm('确定要使用商业计划书模板吗？这将替换当前所有内容。')) {
             const template = {
                 executiveSummary: '本商业计划书旨在概述[公司名称]的商业理念、目标市场、竞争优势及财务规划。\n\n[公司名称]成立于[成立年份]，专注于[核心业务]，致力于为[目标客户]提供[核心价值]。\n\n本文档详细阐述了公司的战略规划、市场定位、运营模式及财务预测，为公司未来[X]年的发展提供清晰的路线图。',
-                companyDescription: '1. 公司使命\n[公司名称]的使命是[使命描述]。\n\n2. 公司愿景\n我们的愿景是[愿景描述]。\n\n3. 核心价值观\n- [价值观1]\n- [价值观2]\n- [价值观3]\n\n4. 公司历史\n公司成立于[成立年份]，由[创始人背景]创立。自成立以来，我们已[重要里程碑]。\n\n5. 法律结构\n公司采用[法律形式，如有限责任公司、股份有限公司等]形式，总部位于[总部地址]。',
+                companyDescription: '1. 公司使命\n[公司名称]的使命是[使命描述]。\n\n2. 公司愿景\n我们的愿景是[愿景描述]。\n\n3. 价值观\n- [价值观1]\n- [价值观2]\n- [价值观3]\n\n4. 公司历史\n公司成立于[成立年份]，由[创始人背景]创立。自成立以来，我们已[重要里程碑]。\n\n5. 法律结构\n公司采用[法律形式，如有限责任公司、股份有限公司等]形式，总部位于[总部地址]。',
                 marketAnalysis: '1. 行业概览\n[行业名称]行业目前正处于[发展阶段，如快速增长期、成熟期等]，市场规模达[市场规模]，年增长率约为[增长率]%。\n\n2. 目标市场\n我们的目标市场主要分为以下几类：\n- [目标市场1]\n- [目标市场2]\n- [目标市场3]\n\n3. 市场趋势\n当前市场主要趋势包括：\n- [趋势1]\n- [趋势2]\n- [趋势3]\n\n4. 竞争分析\n主要竞争对手包括：\n- [竞争对手1]：优势在于[优势]，劣势在于[劣势]\n- [竞争对手2]：优势在于[优势]，劣势在于[劣势]\n\n我们的竞争优势在于[核心竞争优势]。',
                 organizationManagement: '1. 管理团队\n- [姓名]：[职位]，负责[职责]，拥有[背景经验]\n- [姓名]：[职位]，负责[职责]，拥有[背景经验]\n- [姓名]：[职位]，负责[职责]，拥有[背景经验]\n\n2. 组织结构\n公司采用[组织结构类型，如扁平化、矩阵式等]组织结构，下设[部门1]、[部门2]、[部门3]等部门。\n\n3. 人员规划\n预计未来[X]年内，公司员工规模将从目前的[当前人数]人增长至[目标人数]人，主要增加[重点部门]的人员配置。',
                 productsServices: '1. 核心产品/服务\n- [产品/服务1]：[详细描述]，解决了[客户痛点]\n- [产品/服务2]：[详细描述]，解决了[客户痛点]\n- [产品/服务3]：[详细描述]，解决了[客户痛点]\n\n2. 产品/服务特点\n我们的产品/服务具有以下特点：\n- [特点1]\n- [特点2]\n- [特点3]\n\n3. 研发规划\n未来[X]年内，我们计划投入[研发资金]用于产品研发，重点开发[重点研发方向]。\n\n4. 知识产权\n公司目前拥有[专利数量]项专利，[商标数量]项商标，正在申请[申请中数量]项知识产权保护。',
@@ -895,8 +895,15 @@ class BusinessStrategyTool {
         document.getElementById('scalability-score').textContent = scores['scalability'] || 0;
         
         // 假设这些元素存在于HTML中
-        document.getElementById('business-model-average-score')?.textContent = averageScore;
-        document.getElementById('business-model-feedback')?.textContent = message;
+        const averageScoreElement = document.getElementById('business-model-average-score');
+        if (averageScoreElement) {
+            averageScoreElement.textContent = averageScore;
+        }
+        
+        const feedbackElement = document.getElementById('business-model-feedback');
+        if (feedbackElement) {
+            feedbackElement.textContent = message;
+        }
     }
 
     // 思维框架功能

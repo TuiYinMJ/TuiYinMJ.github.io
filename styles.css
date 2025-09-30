@@ -384,6 +384,565 @@ body {
     line-height: 1.5;
 }
 
+/* SWOT分析样式 */
+.swot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 20px;
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 30px;
+    height: calc(100vh - 200px);
+}
+
+.swot-quadrant {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.swot-quadrant::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+}
+
+.strengths::before { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+.weaknesses::before { background: linear-gradient(90deg, #e74c3c, #e67e22); }
+.opportunities::before { background: linear-gradient(90deg, #3498db, #2980b9); }
+.threats::before { background: linear-gradient(90deg, #9b59b6, #8e44ad); }
+
+.swot-quadrant h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--light-bg);
+}
+
+.swot-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(236, 240, 241, 0.5);
+}
+
+.swot-item {
+    background: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--secondary-color);
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.swot-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.swot-item .delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--accent-color);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    display: none;
+    transition: all 0.2s ease;
+}
+
+.swot-item:hover .delete-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.swot-item .delete-btn:hover {
+    background: rgba(231, 76, 60, 0.8);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* 价值主张画布样式 */
+.value-proposition-canvas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 30px;
+}
+
+.vp-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.vp-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+}
+
+.vp-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--light-bg);
+}
+
+.vp-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.vp-item {
+    background: rgba(52, 152, 219, 0.1);
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px dashed rgba(52, 152, 219, 0.3);
+    text-align: center;
+    color: var(--secondary-color);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vp-item:hover {
+    background: rgba(52, 152, 219, 0.2);
+    border-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+/* 精益画布样式 */
+.lean-canvas-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 15px;
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 30px;
+}
+
+.lean-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.lean-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #e74c3c, #e67e22);
+}
+
+.lean-section h4 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.lean-section .section-content {
+    color: var(--light-text);
+    font-size: 12px;
+    line-height: 1.4;
+    min-height: 60px;
+}
+
+/* 战略框架样式 */
+.strategy-framework {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 30px;
+}
+
+.strategy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.strategy-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.strategy-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+
+.strategy-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.strategy-card p {
+    color: var(--light-text);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.strategy-list {
+    list-style: none;
+    padding: 0;
+}
+
+.strategy-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--light-bg);
+    color: var(--dark-text);
+}
+
+.strategy-list li:last-child {
+    border-bottom: none;
+}
+
+/* 市场分析样式 */
+.market-analysis {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 30px;
+}
+
+.analysis-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.analysis-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.analysis-item {
+    background: rgba(236, 240, 241, 0.5);
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid var(--secondary-color);
+}
+
+.analysis-item h4 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.analysis-item p {
+    color: var(--light-text);
+    line-height: 1.5;
+}
+
+/* 竞争分析样式 */
+.competitive-analysis {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 30px;
+}
+
+.competitor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.competitor-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.competitor-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+}
+
+.competitor-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.competitor-strengths, .competitor-weaknesses {
+    margin-bottom: 15px;
+}
+
+.competitor-strengths h4, .competitor-weaknesses h4 {
+    color: var(--success-color);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.competitor-weaknesses h4 {
+    color: var(--accent-color);
+}
+
+.competitor-list {
+    list-style: none;
+    padding: 0;
+}
+
+.competitor-list li {
+    padding: 5px 0;
+    color: var(--dark-text);
+    font-size: 14px;
+}
+
+/* 财务规划样式 */
+.financial-planning {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 30px;
+}
+
+.financial-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.financial-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.financial-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.financial-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.financial-table th,
+.financial-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--light-bg);
+}
+
+.financial-table th {
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.financial-table tr:hover {
+    background: rgba(236, 240, 241, 0.5);
+}
+
+/* 商业计划书样式 */
+.business-plan {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 30px;
+}
+
+.plan-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.plan-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+    border-bottom: 2px solid var(--light-bg);
+    padding-bottom: 10px;
+}
+
+.plan-section p {
+    color: var(--dark-text);
+    line-height: 1.7;
+    margin-bottom: 15px;
+}
+
+.plan-section ul {
+    color: var(--dark-text);
+    line-height: 1.7;
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+.plan-section li {
+    margin-bottom: 8px;
+}
+
+/* 评估页面样式 */
+.assessment-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 30px;
+}
+
+.assessment-criteria, .assessment-results {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.assessment-criteria h3, .assessment-results h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.criterion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--light-bg);
+}
+
+.criterion:last-child {
+    border-bottom: none;
+}
+
+.criterion label {
+    color: var(--dark-text);
+    font-weight: 500;
+}
+
+.rating {
+    color: #ffc107;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.score-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.total-score {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--secondary-color);
+    margin-bottom: 20px;
+}
+
+.score-breakdown {
+    text-align: left;
+}
+
+.score-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--light-bg);
+    color: var(--dark-text);
+}
+
+.score-item:last-child {
+    border-bottom: none;
+}
+
 /* 响应式设计 */
 @media (max-width: 1200px) {
     .business-model-canvas {
@@ -400,6 +959,20 @@ body {
     #channels { grid-column: 1; grid-row: 3; }
     #cost-structure { grid-column: 2; grid-row: 3; }
     #revenue-streams { grid-column: 3; grid-row: 3; }
+    
+    .swot-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, 1fr);
+        height: auto;
+    }
+    
+    .value-proposition-canvas {
+        grid-template-columns: 1fr;
+    }
+    
+    .assessment-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 768px) {
@@ -425,5 +998,39 @@ body {
     .canvas-section {
         grid-column: 1 !important;
         grid-row: auto !important;
+    }
+    
+    .lean-canvas-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+    
+    .strategy-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .competitor-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .financial-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .page-header {
+        padding: 20px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.8em;
+    }
+    
+    .page-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn {
+        justify-content: center;
     }
 }

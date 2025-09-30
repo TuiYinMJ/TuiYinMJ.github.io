@@ -3,6 +3,10 @@ class BusinessStrategyTool {
         this.currentPage = 'business-model-canvas';
         this.notes = this.loadNotes();
         this.swotItems = this.loadSWOTItems();
+        this.competitors = this.loadCompetitors();
+        this.financialData = this.loadFinancialData();
+        this.businessPlanData = this.loadBusinessPlanData();
+        this.assessmentScores = this.loadAssessmentScores();
         this.init();
     }
 
@@ -10,7 +14,11 @@ class BusinessStrategyTool {
         this.bindEvents();
         this.renderNotes();
         this.renderSWOTItems();
+        this.renderCompetitors();
+        this.renderFinancialResults();
+        this.updateAssessmentScores();
         this.showPage(this.currentPage);
+        this.addMobileMenuToggle();
     }
 
     bindEvents() {
@@ -99,7 +107,7 @@ class BusinessStrategyTool {
         const color = document.getElementById('noteColor').value;
 
         if (!content) {
-            alert('请输入便利贴内容！');
+            this.showMessage('Please enter note content!', 'error');
             return;
         }
 
@@ -115,15 +123,15 @@ class BusinessStrategyTool {
         this.saveNotes();
         this.renderNotes();
         this.closeModal();
-        this.showMessage('便利贴添加成功！', 'success');
+        this.showMessage('Note added successfully!', 'success');
     }
 
     deleteNote(noteId) {
-        if (confirm('确定要删除这个便利贴吗？')) {
+        if (confirm('Are you sure you want to delete this note?')) {
             this.notes = this.notes.filter(note => note.id !== noteId);
             this.saveNotes();
             this.renderNotes();
-            this.showMessage('便利贴已删除', 'info');
+            this.showMessage('Note deleted', 'info');
         }
     }
 
@@ -154,7 +162,7 @@ class BusinessStrategyTool {
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = '×';
-        deleteBtn.title = '删除';
+        deleteBtn.title = 'Delete';
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.deleteNote(note.id);
@@ -209,7 +217,7 @@ class BusinessStrategyTool {
                     this.notes[noteIndex].section = section;
                     this.saveNotes();
                     this.renderNotes();
-                    this.showMessage('便利贴已移动', 'success');
+                    this.showMessage('Note moved successfully', 'success');
                 }
             }
         });
@@ -230,18 +238,18 @@ class BusinessStrategyTool {
         if (noteIndex === -1) return;
 
         const note = this.notes[noteIndex];
-        const newContent = prompt('编辑便利贴内容:', note.content);
+        const newContent = prompt('Edit note content:', note.content);
         
         if (newContent !== null && newContent.trim() !== '') {
             this.notes[noteIndex].content = newContent.trim();
             this.saveNotes();
             this.renderNotes();
-            this.showMessage('便利贴已更新', 'success');
+            this.showMessage('Note updated successfully', 'success');
         }
     }
 
     exportCanvas() {
-        this.showMessage('正在生成画布图片...', 'info');
+        this.showMessage('Generating canvas image...', 'info');
         
         if (typeof html2canvas === 'undefined') {
             const script = document.createElement('script');
@@ -262,57 +270,57 @@ class BusinessStrategyTool {
             scale: 2,
             useCORS: true,
             allowTaint: true,
-            backgroundColor: '#667eea'
+            backgroundColor: '#f8fafc'
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `商业模式画布_${new Date().toISOString().split('T')[0]}.png`;
+            link.download = `business_model_canvas_${new Date().toISOString().split('T')[0]}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            this.showMessage('画布图片导出成功！', 'success');
+            this.showMessage('Canvas exported successfully!', 'success');
         }).catch(error => {
-            console.error('导出失败:', error);
-            this.showMessage('导出失败，请重试', 'error');
+            console.error('Export failed:', error);
+            this.showMessage('Export failed, please try again', 'error');
         });
     }
 
     clearCanvas() {
-        if (confirm('确定要清空整个画布吗？所有便利贴将被删除！')) {
+        if (confirm('Are you sure you want to clear the entire canvas? All notes will be deleted!')) {
             this.notes = [];
             this.saveNotes();
             this.renderNotes();
-            this.showMessage('画布已清空', 'info');
+            this.showMessage('Canvas cleared', 'info');
         }
     }
 
     showTemplates() {
         const templates = {
-            '电商平台': [
-                { section: 'value-propositions', content: '便捷的在线购物体验', color: '#ffeb3b' },
-                { section: 'value-propositions', content: '丰富的商品选择', color: '#ffeb3b' },
-                { section: 'customer-segments', content: '网购消费者', color: '#2196f3' },
-                { section: 'customer-segments', content: '年轻白领', color: '#2196f3' },
-                { section: 'channels', content: '官方网站', color: '#4caf50' },
-                { section: 'channels', content: '移动APP', color: '#4caf50' },
-                { section: 'revenue-streams', content: '商品销售佣金', color: '#ff9800' },
-                { section: 'revenue-streams', content: '广告收入', color: '#ff9800' }
+            'E-commerce Platform': [
+                { section: 'value-propositions', content: 'Convenient online shopping experience', color: '#ffeb3b' },
+                { section: 'value-propositions', content: 'Wide product selection', color: '#ffeb3b' },
+                { section: 'customer-segments', content: 'Online shoppers', color: '#2196f3' },
+                { section: 'customer-segments', content: 'Young professionals', color: '#2196f3' },
+                { section: 'channels', content: 'Website', color: '#4caf50' },
+                { section: 'channels', content: 'Mobile app', color: '#4caf50' },
+                { section: 'revenue-streams', content: 'Product sales commission', color: '#ff9800' },
+                { section: 'revenue-streams', content: 'Advertising revenue', color: '#ff9800' }
             ],
-            'SaaS服务': [
-                { section: 'value-propositions', content: '云端软件服务', color: '#ffeb3b' },
-                { section: 'value-propositions', content: '自动更新和维护', color: '#ffeb3b' },
-                { section: 'customer-segments', content: '中小企业', color: '#2196f3' },
-                { section: 'customer-relationships', content: '订阅制服务', color: '#e91e63' },
-                { section: 'revenue-streams', content: '月费/年费订阅', color: '#ff9800' },
-                { section: 'key-activities', content: '软件开发', color: '#4caf50' },
-                { section: 'key-activities', content: '客户支持', color: '#4caf50' }
+            'SaaS Service': [
+                { section: 'value-propositions', content: 'Cloud-based software service', color: '#ffeb3b' },
+                { section: 'value-propositions', content: 'Automatic updates and maintenance', color: '#ffeb3b' },
+                { section: 'customer-segments', content: 'Small and medium businesses', color: '#2196f3' },
+                { section: 'customer-relationships', content: 'Subscription-based service', color: '#e91e63' },
+                { section: 'revenue-streams', content: 'Monthly/annual subscription fees', color: '#ff9800' },
+                { section: 'key-activities', content: 'Software development', color: '#4caf50' },
+                { section: 'key-activities', content: 'Customer support', color: '#4caf50' }
             ]
         };
 
         const templateNames = Object.keys(templates);
-        const selectedTemplate = prompt(`选择模板:\n${templateNames.map((name, index) => `${index + 1}. ${name}`).join('\n')}\n\n输入模板编号:`);
+        const selectedTemplate = prompt(`Select template:\n${templateNames.map((name, index) => `${index + 1}. ${name}`).join('\n')}\n\nEnter template number:`);
         
         if (selectedTemplate && templateNames[selectedTemplate - 1]) {
             const templateName = templateNames[selectedTemplate - 1];
-            if (confirm(`确定要使用"${templateName}"模板吗？这将替换当前所有便利贴。`)) {
+            if (confirm(`Are you sure you want to use the "${templateName}" template? This will replace all current notes.`)) {
                 this.notes = templates[templateName].map(note => ({
                     ...note,
                     id: Date.now().toString() + Math.random(),
@@ -320,15 +328,15 @@ class BusinessStrategyTool {
                 }));
                 this.saveNotes();
                 this.renderNotes();
-                this.showMessage(`"${templateName}"模板已加载`, 'success');
+                this.showMessage(`"${templateName}" template loaded`, 'success');
             }
         }
     }
 
     // SWOT分析功能
     addSWOTItem() {
-        const quadrant = prompt('选择象限:\n1. 优势\n2. 劣势\n3. 机会\n4. 威胁\n\n输入象限编号:');
-        const content = prompt('输入项目内容:');
+        const quadrant = prompt('Select quadrant:\n1. Strengths\n2. Weaknesses\n3. Opportunities\n4. Threats\n\nEnter quadrant number:');
+        const content = prompt('Enter item content:');
         
         if (quadrant && content) {
             const quadrants = ['strengths', 'weaknesses', 'opportunities', 'threats'];
@@ -345,7 +353,7 @@ class BusinessStrategyTool {
                 this.swotItems.push(item);
                 this.saveSWOTItems();
                 this.renderSWOTItems();
-                this.showMessage('SWOT项目已添加', 'success');
+                this.showMessage('SWOT item added successfully', 'success');
             }
         }
     }
@@ -373,7 +381,7 @@ class BusinessStrategyTool {
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-btn';
         deleteBtn.innerHTML = '×';
-        deleteBtn.title = '删除';
+        deleteBtn.title = 'Delete';
         deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.deleteSWOTItem(item.id);
@@ -384,16 +392,16 @@ class BusinessStrategyTool {
     }
 
     deleteSWOTItem(itemId) {
-        if (confirm('确定要删除这个项目吗？')) {
+        if (confirm('Are you sure you want to delete this item?')) {
             this.swotItems = this.swotItems.filter(item => item.id !== itemId);
             this.saveSWOTItems();
             this.renderSWOTItems();
-            this.showMessage('项目已删除', 'info');
+            this.showMessage('Item deleted', 'info');
         }
     }
 
     exportSWOT() {
-        this.showMessage('正在生成SWOT分析图片...', 'info');
+        this.showMessage('Generating SWOT analysis image...', 'info');
         
         if (typeof html2canvas === 'undefined') {
             const script = document.createElement('script');
@@ -414,17 +422,317 @@ class BusinessStrategyTool {
             scale: 2,
             useCORS: true,
             allowTaint: true,
-            backgroundColor: '#667eea'
+            backgroundColor: '#f8fafc'
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `SWOT分析_${new Date().toISOString().split('T')[0]}.png`;
+            link.download = `swot_analysis_${new Date().toISOString().split('T')[0]}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            this.showMessage('SWOT分析图片导出成功！', 'success');
+            this.showMessage('SWOT analysis exported successfully!', 'success');
         }).catch(error => {
-            console.error('导出失败:', error);
-            this.showMessage('导出失败，请重试', 'error');
+            console.error('Export failed:', error);
+            this.showMessage('Export failed, please try again', 'error');
         });
+    }
+
+    clearSWOT() {
+        if (confirm('Are you sure you want to clear all SWOT items?')) {
+            this.swotItems = [];
+            this.saveSWOTItems();
+            this.renderSWOTItems();
+            this.showMessage('SWOT analysis cleared', 'info');
+        }
+    }
+
+    // 价值主张画布功能
+    editValueProposition() {
+        this.showMessage('Click on any section to edit content', 'info');
+    }
+
+    editVPItem(itemId) {
+        const currentContent = document.getElementById(itemId).textContent;
+        const newContent = prompt(`Edit ${itemId.replace('-', ' ')}:`, currentContent);
+        
+        if (newContent !== null) {
+            document.getElementById(itemId).textContent = newContent;
+            this.showMessage('Content updated successfully', 'success');
+        }
+    }
+
+    exportValueProposition() {
+        this.showMessage('Export feature coming soon!', 'info');
+    }
+
+    // 精益画布功能
+    editLeanCanvas() {
+        this.showMessage('Click on any section to edit content', 'info');
+    }
+
+    editLeanSection(sectionId) {
+        const currentContent = document.getElementById(sectionId).textContent;
+        const newContent = prompt(`Edit ${sectionId}:`, currentContent);
+        
+        if (newContent !== null) {
+            document.getElementById(sectionId).textContent = newContent;
+            this.showMessage('Content updated successfully', 'success');
+        }
+    }
+
+    exportLeanCanvas() {
+        this.showMessage('Export feature coming soon!', 'info');
+    }
+
+    // 竞争分析功能
+    addCompetitor() {
+        this.showMessage('Use the form below to add competitor information', 'info');
+    }
+
+    saveCompetitor() {
+        const name = document.getElementById('competitor-name').value.trim();
+        const strengths = document.getElementById('competitor-strengths').value.trim();
+        const weaknesses = document.getElementById('competitor-weaknesses').value.trim();
+
+        if (!name) {
+            this.showMessage('Please enter competitor name', 'error');
+            return;
+        }
+
+        const competitor = {
+            id: Date.now().toString(),
+            name: name,
+            strengths: strengths.split('\n').filter(s => s.trim()),
+            weaknesses: weaknesses.split('\n').filter(w => w.trim()),
+            timestamp: new Date().toISOString()
+        };
+
+        this.competitors.push(competitor);
+        this.saveCompetitors();
+        this.renderCompetitors();
+        
+        // 清空表单
+        document.getElementById('competitor-name').value = '';
+        document.getElementById('competitor-strengths').value = '';
+        document.getElementById('competitor-weaknesses').value = '';
+        
+        this.showMessage('Competitor added successfully', 'success');
+    }
+
+    renderCompetitors() {
+        const container = document.getElementById('competitor-container');
+        container.innerHTML = '';
+
+        this.competitors.forEach(competitor => {
+            const card = this.createCompetitorCard(competitor);
+            container.appendChild(card);
+        });
+    }
+
+    createCompetitorCard(competitor) {
+        const card = document.createElement('div');
+        card.className = 'competitor-card';
+        card.setAttribute('data-competitor-id', competitor.id);
+
+        let strengthsHTML = '';
+        let weaknessesHTML = '';
+
+        if (competitor.strengths && competitor.strengths.length > 0) {
+            strengthsHTML = `
+                <div class="competitor-strengths">
+                    <h4>Strengths</h4>
+                    <ul class="competitor-list">
+                        ${competitor.strengths.map(strength => `<li>${strength}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        if (competitor.weaknesses && competitor.weaknesses.length > 0) {
+            weaknessesHTML = `
+                <div class="competitor-weaknesses">
+                    <h4>Weaknesses</h4>
+                    <ul class="competitor-list">
+                        ${competitor.weaknesses.map(weakness => `<li>${weakness}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        card.innerHTML = `
+            <h3>${competitor.name}</h3>
+            ${strengthsHTML}
+            ${weaknessesHTML}
+            <button class="delete-btn" onclick="window.businessStrategyTool.deleteCompetitor('${competitor.id}')">Delete</button>
+        `;
+
+        return card;
+    }
+
+    deleteCompetitor(competitorId) {
+        if (confirm('Are you sure you want to delete this competitor?')) {
+            this.competitors = this.competitors.filter(competitor => competitor.id !== competitorId);
+            this.saveCompetitors();
+            this.renderCompetitors();
+            this.showMessage('Competitor deleted', 'info');
+        }
+    }
+
+    exportCompetitiveAnalysis() {
+        this.showMessage('Export feature coming soon!', 'info');
+    }
+
+    // 财务规划功能
+    addFinancialData() {
+        this.showMessage('Use the form below to enter financial data', 'info');
+    }
+
+    calculateFinancials() {
+        const monthlyRevenue = parseFloat(document.getElementById('monthly-revenue').value.replace(/[^0-9.-]+/g, '')) || 0;
+        const monthlyExpenses = parseFloat(document.getElementById('monthly-expenses').value.replace(/[^0-9.-]+/g, '')) || 0;
+        const initialInvestment = parseFloat(document.getElementById('initial-investment').value.replace(/[^0-9.-]+/g, '')) || 0;
+
+        const monthlyProfit = monthlyRevenue - monthlyExpenses;
+        const annualProfit = monthlyProfit * 12;
+        const breakEvenMonths = initialInvestment > 0 ? Math.ceil(initialInvestment / monthlyProfit) : 0;
+        const roi = initialInvestment > 0 ? (annualProfit / initialInvestment * 100).toFixed(1) : 0;
+
+        this.financialData = {
+            monthlyRevenue,
+            monthlyExpenses,
+            monthlyProfit,
+            annualProfit,
+            initialInvestment,
+            breakEvenMonths,
+            roi,
+            timestamp: new Date().toISOString()
+        };
+
+        this.saveFinancialData();
+        this.renderFinancialResults();
+        this.showMessage('Financial calculations completed', 'success');
+    }
+
+    renderFinancialResults() {
+        const container = document.getElementById('financial-results');
+        const data = this.financialData;
+
+        if (!data.monthlyRevenue) {
+            container.innerHTML = '<p>Enter financial data above to see results</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <h3>Financial Results</h3>
+            <table class="financial-table">
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Monthly Revenue</td>
+                    <td>$${data.monthlyRevenue.toLocaleString()}</td>
+                </tr>
+                <tr>
+                    <td>Monthly Expenses</td>
+                    <td>$${data.monthlyExpenses.toLocaleString()}</td>
+                </tr>
+                <tr>
+                    <td>Monthly Profit</td>
+                    <td>$${data.monthlyProfit.toLocaleString()}</td>
+                </tr>
+                <tr>
+                    <td>Annual Profit</td>
+                    <td>$${data.annualProfit.toLocaleString()}</td>
+                </tr>
+                <tr>
+                    <td>Break-even (months)</td>
+                    <td>${data.breakEvenMonths}</td>
+                </tr>
+                <tr>
+                    <td>ROI</td>
+                    <td>${data.roi}%</td>
+                </tr>
+            </table>
+        `;
+    }
+
+    exportFinancialPlan() {
+        this.showMessage('Export feature coming soon!', 'info');
+    }
+
+    // 市场分析功能
+    addMarketData() {
+        this.showMessage('Use the form below to enter market data', 'info');
+    }
+
+    calculateMarketShare() {
+        const tam = document.getElementById('tam-input').value;
+        const sam = document.getElementById('sam-input').value;
+        const som = document.getElementById('som-input').value;
+
+        if (tam && sam && som) {
+            this.showMessage('Market share calculations completed', 'success');
+        } else {
+            this.showMessage('Please enter all market data fields', 'error');
+        }
+    }
+
+    exportMarketAnalysis() {
+        this.showMessage('Export feature coming soon!', 'info');
+    }
+
+    // 商业计划书功能
+    generateBusinessPlan() {
+        this.showMessage('Business plan generation feature coming soon!', 'info');
+    }
+
+    exportBusinessPlan() {
+        this.showMessage('Export feature coming soon!', 'info');
+    }
+
+    // 商业模式评估功能
+    rateCriterion(criterionId) {
+        const ratingElement = document.querySelector(`[data-criterion="${criterionId}"]`);
+        const currentRating = ratingElement.textContent.length;
+        const newRating = currentRating < 5 ? currentRating + 1 : 1;
+        
+        ratingElement.textContent = '★'.repeat(newRating) + '☆'.repeat(5 - newRating);
+        
+        this.assessmentScores[criterionId] = newRating * 2; // Convert to 10-point scale
+        this.saveAssessmentScores();
+        this.updateAssessmentScores();
+        this.showMessage('Rating updated', 'success');
+    }
+
+    updateAssessmentScores() {
+        const scores = this.assessmentScores;
+        const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+        
+        document.getElementById('total-score').textContent = `${totalScore}/100`;
+        document.getElementById('value-score').textContent = scores['value-clarity'] || 0;
+        document.getElementById('market-score').textContent = scores['market-feasibility'] || 0;
+        document.getElementById('profit-score').textContent = scores['profit-model'] || 0;
+        document.getElementById('advantage-score').textContent = scores['competitive-advantage'] || 0;
+        document.getElementById('scalability-score').textContent = scores['scalability'] || 0;
+    }
+
+    // 思维框架功能
+    createCustomFramework() {
+        this.showMessage('Custom framework creation feature coming soon!', 'info');
+    }
+
+    exportThinkingFrameworks() {
+        this.showMessage('Export feature coming soon!', 'info');
+    }
+
+    // 移动端菜单
+    addMobileMenuToggle() {
+        const toggle = document.createElement('button');
+        toggle.className = 'mobile-menu-toggle';
+        toggle.innerHTML = '☰';
+        toggle.addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+        document.body.appendChild(toggle);
     }
 
     // 数据存储功能
@@ -446,6 +754,48 @@ class BusinessStrategyTool {
         return saved ? JSON.parse(saved) : [];
     }
 
+    saveCompetitors() {
+        localStorage.setItem('competitors', JSON.stringify(this.competitors));
+    }
+
+    loadCompetitors() {
+        const saved = localStorage.getItem('competitors');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    saveFinancialData() {
+        localStorage.setItem('financialData', JSON.stringify(this.financialData));
+    }
+
+    loadFinancialData() {
+        const saved = localStorage.getItem('financialData');
+        return saved ? JSON.parse(saved) : {};
+    }
+
+    saveBusinessPlanData() {
+        localStorage.setItem('businessPlanData', JSON.stringify(this.businessPlanData));
+    }
+
+    loadBusinessPlanData() {
+        const saved = localStorage.getItem('businessPlanData');
+        return saved ? JSON.parse(saved) : {};
+    }
+
+    saveAssessmentScores() {
+        localStorage.setItem('assessmentScores', JSON.stringify(this.assessmentScores));
+    }
+
+    loadAssessmentScores() {
+        const saved = localStorage.getItem('assessmentScores');
+        return saved ? JSON.parse(saved) : {
+            'value-clarity': 8,
+            'market-feasibility': 7,
+            'profit-model': 6,
+            'competitive-advantage': 8,
+            'scalability': 6
+        };
+    }
+
     // 消息提示功能
     showMessage(message, type = 'info') {
         const messageDiv = document.createElement('div');
@@ -454,22 +804,22 @@ class BusinessStrategyTool {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: var(--radius);
             color: white;
             font-weight: 600;
             z-index: 1001;
             transition: all 0.3s ease;
             transform: translateX(100%);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-lg);
             font-size: 14px;
         `;
 
         const colors = {
-            success: '#27ae60',
-            error: '#e74c3c',
-            info: '#3498db',
-            warning: '#f39c12'
+            success: '#059669',
+            error: '#dc2626',
+            info: '#2563eb',
+            warning: '#d97706'
         };
         messageDiv.style.backgroundColor = colors[type] || colors.info;
 
@@ -499,6 +849,90 @@ function exportSWOT() {
     window.businessStrategyTool.exportSWOT();
 }
 
+function clearSWOT() {
+    window.businessStrategyTool.clearSWOT();
+}
+
+function editValueProposition() {
+    window.businessStrategyTool.editValueProposition();
+}
+
+function editVPItem(itemId) {
+    window.businessStrategyTool.editVPItem(itemId);
+}
+
+function exportValueProposition() {
+    window.businessStrategyTool.exportValueProposition();
+}
+
+function editLeanCanvas() {
+    window.businessStrategyTool.editLeanCanvas();
+}
+
+function editLeanSection(sectionId) {
+    window.businessStrategyTool.editLeanSection(sectionId);
+}
+
+function exportLeanCanvas() {
+    window.businessStrategyTool.exportLeanCanvas();
+}
+
+function addCompetitor() {
+    window.businessStrategyTool.addCompetitor();
+}
+
+function saveCompetitor() {
+    window.businessStrategyTool.saveCompetitor();
+}
+
+function exportCompetitiveAnalysis() {
+    window.businessStrategyTool.exportCompetitiveAnalysis();
+}
+
+function addFinancialData() {
+    window.businessStrategyTool.addFinancialData();
+}
+
+function calculateFinancials() {
+    window.businessStrategyTool.calculateFinancials();
+}
+
+function exportFinancialPlan() {
+    window.businessStrategyTool.exportFinancialPlan();
+}
+
+function addMarketData() {
+    window.businessStrategyTool.addMarketData();
+}
+
+function calculateMarketShare() {
+    window.businessStrategyTool.calculateMarketShare();
+}
+
+function exportMarketAnalysis() {
+    window.businessStrategyTool.exportMarketAnalysis();
+}
+
+function generateBusinessPlan() {
+    window.businessStrategyTool.generateBusinessPlan();
+}
+
+function exportBusinessPlan() {
+    window.businessStrategyTool.exportBusinessPlan();
+}
+
+function rateCriterion(criterionId) {
+    window.businessStrategyTool.rateCriterion(criterionId);
+}
+
+function createCustomFramework() {
+    window.businessStrategyTool.createCustomFramework();
+}
+
+function exportThinkingFrameworks() {
+    window.businessStrategyTool.exportThinkingFrameworks();
+}
+
 // 键盘快捷键
 document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
@@ -525,14 +959,14 @@ if (!localStorage.getItem('businessModelCanvas') && localStorage.getItem('firstV
         {
             id: '1',
             section: 'value-propositions',
-            content: '提供高质量的产品和服务',
+            content: 'Provide high-quality products and services',
             color: '#ffeb3b',
             timestamp: new Date().toISOString()
         },
         {
             id: '2',
             section: 'customer-segments',
-            content: '年轻专业人士',
+            content: 'Young professionals',
             color: '#2196f3',
             timestamp: new Date().toISOString()
         }

@@ -1,100 +1,106 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>微信公众号Markdown编辑器 - Opus</title>
-    <link rel="stylesheet" href="style.css">
+    <title>商业模式画布</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
-
-<body class="theme-light">
-
-    <div class="header">
-        <h1>公众号 Markdown 编辑器</h1>
-        <div class="controls">
-            <div class="control-group">
-                <label for="ui-mode-toggle">界面模式:</label>
-                <select id="ui-mode-toggle">
-                    <option value="light">明亮</option>
-                    <option value="dark">深邃</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <span class="theme-name">文章主题: Opus 杰作 ✨</span>
-            </div>
-            <button id="copy-button">复制全文</button>
-        </div>
-    </div>
-
+<body>
     <div class="container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h3>语法大全</h3>
-                <p>带 * 号为扩展语法, 预览可能无特殊效果。</p>
+        <header>
+            <h1>商业模式画布</h1>
+            <div class="controls">
+                <button id="addNoteBtn" class="btn">添加便利贴</button>
+                <button id="saveBtn" class="btn">保存画布</button>
+                <button id="clearBtn" class="btn">清空画布</button>
             </div>
-            <ul id="syntax-helper">
-                <li class="syntax-category">特殊模块</li>
-                <li data-syntax="::: card\n#### 这里是卡片标题\n这里是卡片正文内容。\n:::" data-placeholder="#### 这里是卡片标题">高亮卡片* ✨</li>
-                <li class="syntax-category">基础语法</li>
-                <li data-syntax="# " data-placeholder="一级标题">H1</li>
-                <li data-syntax="## " data-placeholder="二级标题">H2</li>
-                <li data-syntax="### " data-placeholder="三级标题">H3</li>
-                <li data-syntax="#### " data-placeholder="四级标题">H4</li>
-                <li data-syntax="\n---\n" data-placeholder="">水平线</li>
-                <li class="syntax-category">文本样式</li>
-                <li data-syntax="**加粗**" data-placeholder="加粗">加粗</li>
-                <li data-syntax="*斜体*" data-placeholder="斜体">斜体</li>
-                <li data-syntax="***粗斜体***" data-placeholder="粗斜体">粗斜体</li>
-                <li data-syntax="<u>下划线</u>" data-placeholder="下划线">下划线(HTML)</li>
-                <li data-syntax="~~删除线~~" data-placeholder="删除线">删除线*</li>
-                <li data-syntax="`行内代码`" data-placeholder="行内代码">行内代码</li>
-                <li data-syntax="==高亮==" data-placeholder="高亮">高亮*</li>
-                <li data-syntax="^上标^" data-placeholder="上标">上标*</li>
-                <li data-syntax="~下标~" data-placeholder="下标">下标*</li>
-                <li class="syntax-category">列表</li>
-                <li data-syntax="- " data-placeholder="无序列表项">无序列表</li>
-                <li data-syntax="1. " data-placeholder="有序列表项">有序列表</li>
-                <li data-syntax="- [ ] " data-placeholder="待办事项">任务列表*</li>
-                <li data-syntax="- [x] " data-placeholder="已办事项">已办任务*</li>
-                <li data-syntax="\n术语\n: 定义" data-placeholder="术语">定义列表*</li>
-                <li class="syntax-category">链接与媒体</li>
-                <li data-syntax="[链接文本](https://)" data-placeholder="链接文本">链接</li>
-                <li data-syntax="![图片描述](https://)" data-placeholder="图片描述">图片</li>
-                <li data-syntax="<https://example.com>" data-placeholder="">自动链接*</li>
-                <li class="syntax-category">区块</li>
-                <li data-syntax="> " data-placeholder="引用内容">引用</li>
-                <li data-syntax=">> " data-placeholder="嵌套引用">嵌套引用</li>
-                <li data-syntax="```javascript\n// JS代码\n```" data-placeholder="// JS代码">JS 代码块</li>
-                <li data-syntax="::: tip\n提示信息\n:::" data-placeholder="提示信息">提示块*</li>
-                <li data-syntax="::: warning\n警告信息\n:::" data-placeholder="警告信息">警告块*</li>
-                <li class="syntax-category">表格*</li>
-                <li data-syntax="| 左对齐 | 居中 | 右对齐 |\n|:---|:---:|---:|\n| 单元格 | 单元格 | 单元格 |" data-placeholder="左对齐">
-                    对齐表格*</li>
-                <li data-syntax="| 表头 | 表头 |\n|---|---|\n| 单元格 | 单元格 |" data-placeholder="表头">简单表格*</li>
-                <li class="syntax-category">元数据与注释*</li>
-                <li data-syntax="\n---\ntitle: '文章标题'\ndate: 2025-01-01\n---\n" data-placeholder="文章标题">YAML
-                    Frontmatter*</li>
-                <li data-syntax="\n[^1]: 脚注的解释内容。" data-placeholder="脚注的解释内容">脚注定义*</li>
-                <li data-syntax="文本内容[^1]" data-placeholder="[^1]">脚注引用*</li>
-                <li data-syntax="\n*[HTML]: 超文本标记语言\n" data-placeholder="HTML">缩写定义*</li>
-                <li data-syntax="" data-placeholder="注释内容">HTML 注释</li>
-                <li class="syntax-category">高级/非标*</li>
-                <li data-syntax="[TOC]" data-placeholder="">TOC 目录*</li>
-                <li data-syntax="$ a^2+b^2=c^2 $" data-placeholder="a^2+b^2=c^2">行内公式*</li>
-                <li data-syntax="$$\nE = mc^2\n$$" data-placeholder="E = mc^2">块级公式*</li>
-                <li data-syntax="```mermaid\ngraph TD; A-->B;\n```" data-placeholder="graph TD; A-->B;">Mermaid 图*</li>
-            </ul>
-        </div>
-        <div class="editor-pane"><textarea id="editor" placeholder="在此处输入 Markdown 内容..."></textarea></div>
-        <div class="preview-pane">
-            <div id="preview"></div>
+        </header>
+
+        <div class="canvas-grid">
+            <!-- 第一行 -->
+            <div class="section" id="key-partners" data-section="key-partners">
+                <h3>重要伙伴</h3>
+                <div class="notes-container"></div>
+            </div>
+            <div class="section" id="key-activities" data-section="key-activities">
+                <h3>关键业务</h3>
+                <div class="notes-container"></div>
+            </div>
+            <div class="section" id="value-propositions" data-section="value-propositions">
+                <h3>价值主张</h3>
+                <div class="notes-container"></div>
+            </div>
+            <div class="section" id="customer-relationships" data-section="customer-relationships">
+                <h3>客户关系</h3>
+                <div class="notes-container"></div>
+            </div>
+            <div class="section" id="customer-segments" data-section="customer-segments">
+                <h3>客户细分</h3>
+                <div class="notes-container"></div>
+            </div>
+
+            <!-- 第二行 -->
+            <div class="section" id="key-resources" data-section="key-resources">
+                <h3>核心资源</h3>
+                <div class="notes-container"></div>
+            </div>
+            <div class="section" id="channels" data-section="channels">
+                <h3>渠道通路</h3>
+                <div class="notes-container"></div>
+            </div>
+
+            <!-- 第三行 -->
+            <div class="section" id="cost-structure" data-section="cost-structure">
+                <h3>成本结构</h3>
+                <div class="notes-container"></div>
+            </div>
+            <div class="section" id="revenue-streams" data-section="revenue-streams">
+                <h3>收入来源</h3>
+                <div class="notes-container"></div>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/lib/marked.umd.min.js"></script>
+    <!-- 添加便利贴的模态框 -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>添加便利贴</h3>
+            <form id="noteForm">
+                <div class="form-group">
+                    <label for="noteSection">选择区域：</label>
+                    <select id="noteSection" required>
+                        <option value="key-partners">重要伙伴</option>
+                        <option value="key-activities">关键业务</option>
+                        <option value="value-propositions">价值主张</option>
+                        <option value="customer-relationships">客户关系</option>
+                        <option value="customer-segments">客户细分</option>
+                        <option value="key-resources">核心资源</option>
+                        <option value="channels">渠道通路</option>
+                        <option value="cost-structure">成本结构</option>
+                        <option value="revenue-streams">收入来源</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="noteContent">内容：</label>
+                    <textarea id="noteContent" placeholder="输入便利贴内容..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="noteColor">颜色：</label>
+                    <select id="noteColor">
+                        <option value="#ffeb3b">黄色</option>
+                        <option value="#e91e63">粉色</option>
+                        <option value="#2196f3">蓝色</option>
+                        <option value="#4caf50">绿色</option>
+                        <option value="#ff9800">橙色</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">添加</button>
+            </form>
+        </div>
+    </div>
+
     <script src="script.js"></script>
-
 </body>
-
 </html>

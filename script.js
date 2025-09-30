@@ -1,139 +1,320 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const editor = document.getElementById('editor');
-    const preview = document.getElementById('preview');
-    const uiModeToggle = document.getElementById('ui-mode-toggle');
-    const syntaxHelper = document.getElementById('syntax-helper');
-    const copyButton = document.getElementById('copy-button');
-
-    // --- 【【【 Opus Theme - 终极设计主题 】】】 ---
-    const opus = {
-        // 用下面的代码块，完整替换掉旧的 opus 对象
-        h1: `font-size: 28px; font-weight: bold; color: #ffffff; text-shadow: 0 1px 3px rgba(0,0,0,0.2); text-align: center; margin: 20px 0; padding: 25px 20px; border-radius: 8px; background-color: #2c3e50; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZHT0IjEwIj48Y2lyY2xlIGN4PSI1IiBjeT0iNSIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIvPjwvc3ZnPg=='), linear-gradient(135deg, #4a69bd, #2c3e50); box-shadow: 0 4px 15px rgba(0,0,0,0.2);`,
-        h2: `font-size: 24px; font-weight: bold; color: #4a69bd; margin: 45px 0 25px; padding-bottom: 12px; border-bottom: 3px solid #6a8ee6;`,
-        h3: `font-size: 20px; font-weight: bold; color: #34495e; margin: 30px 0 15px; padding-left: 20px; border-left: 5px solid #bdc3c7;`,
-        h4: `font-size: 18px; font-weight: bold; color: #7f8c8d; margin: 25px 0 10px;`,
-        p: `font-size: 17px; line-height: 1.9; color: #34495e; margin: 20px 0; text-align: justify;`,
-        blockquote: `margin: 25px 0; padding: 1px; border-radius: 10px; background: linear-gradient(135deg, #6a8ee6, #4a69bd); box-shadow: 0 5px 15px rgba(0,0,0,0.1);`,
-        blockquote_inner: `background: #ffffff; color: #34495e; padding: 20px 25px; border-radius: 9px;`,
-        pre: `<div style="background-color: #2d2d2d; border-radius: 8px; margin: 25px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.3);"><div style="background-color:#3c3c3c; padding: 10px 15px; border-top-left-radius: 8px; border-top-right-radius: 8px; display: flex; align-items: center;"><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #ff5f56; margin-right: 6px;"></span><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #ffbd2e; margin-right: 6px;"></span><span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #27c93f;"></span><span style="color: #a0a0a0; font-size: 12px; margin-left: auto;">__LANG__</span></div><pre style="background-color:transparent; color:#f8f8f2; padding: 0 20px 20px; margin: 0; font-size: 14px; overflow-x: auto; line-height: 1.6;">__CODE__</pre></div>`,
-        table: `<div style="margin: 25px 0; box-shadow: 0 4px 10px rgba(0,0,0,0.08); border-radius: 8px; overflow: hidden;"><table style="width:100%; border-collapse: collapse; text-align: left;">__TABLE_CONTENT__</table></div>`,
-        th: `background-color: #4a69bd; color: white; padding: 14px 18px; font-weight: 600;`,
-        td: `padding: 12px 18px; border-bottom: 1px solid #f0f0f0; color: #34495e;`,
-        ul: `list-style-type: none; padding-left: 0;`,
-        li: `position: relative; padding-left: 30px; margin-bottom: 12px; line-height: 1.8;`,
-        li_icon: `<span style="position: absolute; left: 0; top: 6px; width: 18px; height: 18px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#6a8ee6"/><stop offset="100%" stop-color="#4a69bd"/></linearGradient></defs><path d="M50,0L93.3,25v50L50,100L6.7,75v-50z" fill="url(#lg)"/></svg></span>`,
-        strong: `color: #4a69bd; font-weight: bold;`,
-        em: `font-style: normal; background-color: #f0f8ff; padding: 2px 5px; border-radius: 4px;`,
-        del: `text-decoration: none; background-image: linear-gradient(transparent 60%, #ffc1c1 40%);`,
-        a: `color: #4a69bd; text-decoration: none; font-weight: bold;`,
-        hr: `border: none; margin: 50px 0; text-align: center;`,
-        hr_icon: `<span style="display:inline-block; padding: 0 15px; background-color: #fff; color: #bdc3c7; position:relative; top:-12px;">✂︎</span><div style="border-top: 1px dashed #bdc3c7;"></div>`
-    };
-
-    const cardExtension = { name: 'card', level: 'block', start(src) { return src.match(/::: card\n/)?.index; }, tokenizer(src) { const rule = /^::: card\n([\s\S]+?)\n:::/; const match = rule.exec(src); if (match) { return { type: 'card', raw: match[0], text: match[1].trim(), }; } }, renderer(token) { const contentHtml = marked.parse(token.text); return `<div style="padding: 2px; border-radius: 10px; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); margin: 25px 0; box-shadow: 0 4px 15px 0 rgba(220, 39, 67, 0.3);"><div style="background: #fff; border-radius: 8px; padding: 20px;">${contentHtml}</div></div>`; } };
-    marked.use({ extensions: [cardExtension] });
-
-    function createRenderer() {
-        const renderer = new marked.Renderer();
-        const T = opus;
-        renderer.heading = (text, level) => `<h${level} style="${T['h' + level]}">${text}</h${level}>`;
-        renderer.paragraph = (text) => `<p style="${T.p}">${text}</p>`;
-        renderer.blockquote = (quote) => `<div style="${T.blockquote}"><div style="${T.blockquote_inner}">${quote}</div></div>`;
-        renderer.code = (code, lang) => T.pre.replace('__CODE__', `<code>${code}</code>`).replace('__LANG__', (lang || '').toUpperCase());
-        // 【FIXED】移除对 T.thead 的无效引用
-        renderer.table = (header, body) => T.table.replace('__TABLE_CONTENT__', `<thead><tr>${header}</tr></thead><tbody>${body}</tbody>`);
-        renderer.tablecell = (content, flags) => `<${flags.header ? 'th' : 'td'} style="${flags.header ? T.th : T.td}" align="${flags.align || 'left'}">${content}</${flags.header ? 'th' : 'td'}>`;
-        renderer.list = (body, ordered) => `<ul style="${T.ul}">${body}</ul>`;
-        renderer.listitem = (text) => `<li style="${T.li}">${T.li_icon}${text}</li>`;
-        renderer.strong = (text) => `<strong style="${T.strong}">${text}</strong>`;
-        renderer.em = (text) => `<em style="${T.em}">${text}</em>`;
-        renderer.del = (text) => `<span style="${T.del}">${text}</span>`;
-        renderer.link = (href, title, text) => `<a href="${href}" title="${title}" style="${T.a}">${text}</a>`;
-        renderer.image = (href, title, text) => `<img src="${href}" alt="${text}" title="${title}" style="max-width:100%; border-radius: 8px; display:block; margin: 20px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">`;
-        renderer.hr = () => `<div style="${T.hr}"></div>`;
-        renderer.html = (html) => html;
-        return renderer;
+class BusinessModelCanvas {
+    constructor() {
+        this.notes = this.loadNotes();
+        this.init();
     }
 
-    function render() {
-        try {
-            const renderer = createRenderer();
-            preview.innerHTML = marked.parse(editor.value, { renderer: renderer, breaks: true, gfm: true });
-        } catch (error) {
-            console.error("渲染错误:", error);
-            preview.innerHTML = `<div style="padding:20px; background-color:#fff0f0; border:2px solid red; color:red;"><h3>渲染引擎崩溃！</h3><p><strong>错误详情:</strong> ${error.message}</p></div>`;
-        }
+    init() {
+        this.bindEvents();
+        this.renderNotes();
     }
 
-    function insertSyntax(syntax, placeholder) {
-        const start = editor.selectionStart;
-        const text = editor.value;
-        editor.value = text.slice(0, start) + syntax + text.slice(start);
-        if (placeholder) {
-            const selectionStart = editor.value.indexOf(placeholder, start);
-            if (selectionStart !== -1) {
-                 editor.setSelectionRange(selectionStart, selectionStart + placeholder.length);
+    bindEvents() {
+        // 添加便利贴按钮
+        document.getElementById('addNoteBtn').addEventListener('click', () => {
+            this.openModal();
+        });
+
+        // 保存按钮
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            this.saveCanvas();
+        });
+
+        // 清空按钮
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            this.clearCanvas();
+        });
+
+        // 模态框关闭按钮
+        document.querySelector('.close').addEventListener('click', () => {
+            this.closeModal();
+        });
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('noteModal');
+            if (e.target === modal) {
+                this.closeModal();
             }
-        } else {
-            editor.setSelectionRange(start + syntax.length, start + syntax.length);
+        });
+
+        // 便利贴表单提交
+        document.getElementById('noteForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addNote();
+        });
+
+        // 拖拽功能
+        this.enableDragAndDrop();
+    }
+
+    openModal() {
+        document.getElementById('noteModal').style.display = 'block';
+        document.getElementById('noteContent').focus();
+    }
+
+    closeModal() {
+        document.getElementById('noteModal').style.display = 'none';
+        document.getElementById('noteForm').reset();
+    }
+
+    addNote() {
+        const section = document.getElementById('noteSection').value;
+        const content = document.getElementById('noteContent').value.trim();
+        const color = document.getElementById('noteColor').value;
+
+        if (!content) {
+            alert('请输入便利贴内容！');
+            return;
         }
-        editor.focus();
-        render();
+
+        const note = {
+            id: Date.now().toString(),
+            section: section,
+            content: content,
+            color: color,
+            timestamp: new Date().toISOString()
+        };
+
+        this.notes.push(note);
+        this.saveNotes();
+        this.renderNotes();
+        this.closeModal();
+
+        // 显示成功提示
+        this.showMessage('便利贴添加成功！', 'success');
+    }
+
+    deleteNote(noteId) {
+        if (confirm('确定要删除这个便利贴吗？')) {
+            this.notes = this.notes.filter(note => note.id !== noteId);
+            this.saveNotes();
+            this.renderNotes();
+            this.showMessage('便利贴已删除', 'info');
+        }
+    }
+
+    renderNotes() {
+        // 清空所有区域的便利贴
+        document.querySelectorAll('.notes-container').forEach(container => {
+            container.innerHTML = '';
+        });
+
+        // 渲染便利贴
+        this.notes.forEach(note => {
+            const container = document.querySelector(`[data-section="${note.section}"] .notes-container`);
+            if (container) {
+                const noteElement = this.createNoteElement(note);
+                container.appendChild(noteElement);
+            }
+        });
+    }
+
+    createNoteElement(note) {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = `note ${this.getColorClass(note.color)}`;
+        noteDiv.setAttribute('data-note-id', note.id);
+        noteDiv.setAttribute('draggable', 'true');
+
+        // 便利贴内容
+        const content = document.createElement('div');
+        content.textContent = note.content;
+        content.className = 'note-content';
+
+        // 删除按钮
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.title = '删除';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.deleteNote(note.id);
+        });
+
+        noteDiv.appendChild(content);
+        noteDiv.appendChild(deleteBtn);
+
+        return noteDiv;
+    }
+
+    getColorClass(color) {
+        const colorMap = {
+            '#ffeb3b': 'yellow',
+            '#e91e63': 'pink',
+            '#2196f3': 'blue',
+            '#4caf50': 'green',
+            '#ff9800': 'orange'
+        };
+        return colorMap[color] || 'yellow';
+    }
+
+    enableDragAndDrop() {
+        let draggedNote = null;
+
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('note')) {
+                draggedNote = e.target;
+                e.target.style.opacity = '0.5';
+            }
+        });
+
+        document.addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('note')) {
+                e.target.style.opacity = '1';
+                draggedNote = null;
+            }
+        });
+
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (draggedNote && e.target.classList.contains('section')) {
+                const section = e.target.getAttribute('data-section');
+                const noteId = draggedNote.getAttribute('data-note-id');
+                
+                // 更新便利贴的区域
+                const noteIndex = this.notes.findIndex(note => note.id === noteId);
+                if (noteIndex !== -1) {
+                    this.notes[noteIndex].section = section;
+                    this.saveNotes();
+                    this.renderNotes();
+                    this.showMessage('便利贴已移动', 'success');
+                }
+            }
+        });
+    }
+
+    saveCanvas() {
+        this.saveNotes();
+        this.showMessage('画布已保存！', 'success');
+        
+        // 创建下载链接
+        const dataStr = JSON.stringify(this.notes, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `商业模式画布_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    clearCanvas() {
+        if (confirm('确定要清空整个画布吗？所有便利贴将被删除！')) {
+            this.notes = [];
+            this.saveNotes();
+            this.renderNotes();
+            this.showMessage('画布已清空', 'info');
+        }
+    }
+
+    saveNotes() {
+        localStorage.setItem('businessModelCanvas', JSON.stringify(this.notes));
+    }
+
+    loadNotes() {
+        const saved = localStorage.getItem('businessModelCanvas');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    showMessage(message, type = 'info') {
+        // 创建消息元素
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = message;
+        messageDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 1001;
+            transition: all 0.3s ease;
+            transform: translateX(100%);
+        `;
+
+        // 设置颜色
+        const colors = {
+            success: '#4CAF50',
+            error: '#f44336',
+            info: '#2196F3',
+            warning: '#ff9800'
+        };
+        messageDiv.style.backgroundColor = colors[type] || colors.info;
+
+        document.body.appendChild(messageDiv);
+
+        // 显示动画
+        setTimeout(() => {
+            messageDiv.style.transform = 'translateX(0)';
+        }, 100);
+
+        // 自动隐藏
+        setTimeout(() => {
+            messageDiv.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 300);
+        }, 3000);
+    }
+}
+
+// 键盘快捷键
+document.addEventListener('keydown', (e) => {
+    // Ctrl+N 或 Cmd+N 添加便利贴
+    if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        document.getElementById('addNoteBtn').click();
     }
     
-    // 【FIXED】重写复制功能以支持富文本
-    function copyRichText() {
-        const content = preview.innerHTML;
-
-        // 优先使用 Clipboard API
-        if (navigator.clipboard && navigator.clipboard.write) {
-            const blob = new Blob([content], { type: 'text/html' });
-            const item = new ClipboardItem({ 'text/html': blob });
-            navigator.clipboard.write([item]).then(() => {
-                alert('已复制渲染后的内容！');
-            }).catch(err => {
-                console.error('使用 Clipboard API 复制失败:', err);
-                copyFallback(); // 如果失败，则尝试后备方法
-            });
-        } else {
-            copyFallback(); // 如果不支持 Clipboard API，直接使用后备方法
+    // Escape 关闭模态框
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('noteModal');
+        if (modal.style.display === 'block') {
+            modal.style.display = 'none';
         }
     }
-
-    // 后备复制方法 (兼容旧版浏览器)
-    function copyFallback() {
-        const tempEl = document.createElement('div');
-        tempEl.style.position = 'absolute';
-        tempEl.style.left = '-9999px';
-        tempEl.innerHTML = preview.innerHTML;
-        document.body.appendChild(tempEl);
-
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(tempEl);
-        selection.removeAllRanges();
-        selection.addRange(range);
-
-        try {
-            const success = document.execCommand('copy');
-            if (success) {
-                alert('已复制渲染后的内容！(兼容模式)');
-            } else {
-                alert('复制失败，请手动复制。');
-            }
-        } catch (err) {
-            console.error('后备复制方法失败:', err);
-            alert('复制出错了，请手动复制。');
-        } finally {
-            document.body.removeChild(tempEl);
-        }
-    }
-
-    editor.addEventListener('input', render);
-    uiModeToggle.addEventListener('change', (e) => { document.body.className = `theme-${e.target.value}`; });
-    copyButton.addEventListener('click', copyRichText); // 修改了事件监听调用的函数
-    syntaxHelper.addEventListener('click', (e) => { if (e.target.tagName === 'LI' && e.target.dataset.syntax) { const syntax = e.target.dataset.syntax.replace(/\\n/g, '\n'); const placeholder = e.target.dataset.placeholder; insertSyntax(syntax, placeholder); } });
-
-    editor.value = `# Opus 主题 - 极致美学\n\n这是为满足您对独有、美观、极致装饰性的最终要求而设计的唯一主题。\n\n## 列表的新篇章\n\n- 每个列表项都由精心设计的“宝石”SVG引领。\n- 行间距、颜色、边距都经过了重新考量。\n\n> 引用块采用了渐变色背景，营造出高级感和深度。\n\n---\n\n\`\`\`javascript\nfunction opus() {\n  // 代码块拥有精致的macOS窗口标题栏\n  // 和优雅的边框阴影\n  return "A Masterpiece";\n}\n\`\`\`\n\n| 表头经过重新设计 | 更具视觉吸引力 |\n|:---|:---|\n| 拥有了更专业的背景和字体颜色 | 单元格的分割线也更清晰 | \n\n希望这份倾尽心力的设计，能够成为您创作路上的“杰作”。`;
-    render();
 });
+
+// 初始化应用
+document.addEventListener('DOMContentLoaded', () => {
+    new BusinessModelCanvas();
+});
+
+// 添加一些示例数据（首次使用时）
+if (!localStorage.getItem('businessModelCanvas') && localStorage.getItem('firstVisit') === null) {
+    const exampleNotes = [
+        {
+            id: '1',
+            section: 'value-propositions',
+            content: '提供高质量的产品和服务',
+            color: '#ffeb3b',
+            timestamp: new Date().toISOString()
+        },
+        {
+            id: '2',
+            section: 'customer-segments',
+            content: '年轻专业人士',
+            color: '#2196f3',
+            timestamp: new Date().toISOString()
+        },
+        {
+            id: '3',
+            section: 'revenue-streams',
+            content: '产品销售',
+            color: '#4caf50',
+            timestamp: new Date().toISOString()
+        }
+    ];
+    localStorage.setItem('businessModelCanvas', JSON.stringify(exampleNotes));
+    localStorage.setItem('firstVisit', 'true');
+}

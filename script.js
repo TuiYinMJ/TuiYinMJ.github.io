@@ -19,6 +19,7 @@ class BusinessStrategyTool {
         this.updateAssessmentScores();
         this.showPage(this.currentPage);
         this.addMobileMenuToggle();
+        this.showMessage('欢迎使用商业策略工具箱！', 'info');
     }
 
     bindEvents() {
@@ -238,18 +239,18 @@ class BusinessStrategyTool {
         if (noteIndex === -1) return;
 
         const note = this.notes[noteIndex];
-        const newContent = prompt('Edit note content:', note.content);
+        const newContent = prompt('编辑便利贴内容:', note.content);
         
         if (newContent !== null && newContent.trim() !== '') {
             this.notes[noteIndex].content = newContent.trim();
             this.saveNotes();
             this.renderNotes();
-            this.showMessage('Note updated successfully', 'success');
+            this.showMessage('便利贴更新成功', 'success');
         }
     }
 
     exportCanvas() {
-        this.showMessage('Generating canvas image...', 'info');
+        this.showMessage('正在生成画布图像...', 'info');
         
         if (typeof html2canvas === 'undefined') {
             const script = document.createElement('script');
@@ -273,54 +274,83 @@ class BusinessStrategyTool {
             backgroundColor: '#f8fafc'
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `business_model_canvas_${new Date().toISOString().split('T')[0]}.png`;
+            link.download = `商业模式画布_${new Date().toISOString().split('T')[0]}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            this.showMessage('Canvas exported successfully!', 'success');
+            this.showMessage('画布导出成功！', 'success');
         }).catch(error => {
-            console.error('Export failed:', error);
-            this.showMessage('Export failed, please try again', 'error');
+            console.error('导出失败:', error);
+            this.showMessage('导出失败，请重试', 'error');
         });
     }
 
     clearCanvas() {
-        if (confirm('Are you sure you want to clear the entire canvas? All notes will be deleted!')) {
+        if (confirm('确定要清空整个画布吗？所有便利贴都将被删除！')) {
             this.notes = [];
             this.saveNotes();
             this.renderNotes();
-            this.showMessage('Canvas cleared', 'info');
+            this.showMessage('画布已清空', 'info');
         }
     }
 
     showTemplates() {
         const templates = {
-            'E-commerce Platform': [
-                { section: 'value-propositions', content: 'Convenient online shopping experience', color: '#ffeb3b' },
-                { section: 'value-propositions', content: 'Wide product selection', color: '#ffeb3b' },
-                { section: 'customer-segments', content: 'Online shoppers', color: '#2196f3' },
-                { section: 'customer-segments', content: 'Young professionals', color: '#2196f3' },
-                { section: 'channels', content: 'Website', color: '#4caf50' },
-                { section: 'channels', content: 'Mobile app', color: '#4caf50' },
-                { section: 'revenue-streams', content: 'Product sales commission', color: '#ff9800' },
-                { section: 'revenue-streams', content: 'Advertising revenue', color: '#ff9800' }
+            '电子商务平台': [
+                { section: 'value-propositions', content: '便捷的在线购物体验', color: '#ffeb3b' },
+                { section: 'value-propositions', content: '丰富的产品选择', color: '#ffeb3b' },
+                { section: 'customer-segments', content: '在线购物者', color: '#2196f3' },
+                { section: 'customer-segments', content: '年轻专业人士', color: '#2196f3' },
+                { section: 'channels', content: '网站', color: '#4caf50' },
+                { section: 'channels', content: '移动应用', color: '#4caf50' },
+                { section: 'revenue-streams', content: '产品销售佣金', color: '#ff9800' },
+                { section: 'revenue-streams', content: '广告收入', color: '#ff9800' },
+                { section: 'key-activities', content: '平台维护', color: '#e91e63' },
+                { section: 'key-activities', content: '物流配送', color: '#e91e63' },
+                { section: 'key-partners', content: '供应商', color: '#9c27b0' },
+                { section: 'key-partners', content: '支付平台', color: '#9c27b0' },
+                { section: 'key-resources', content: '技术团队', color: '#f44336' },
+                { section: 'key-resources', content: '物流网络', color: '#f44336' },
+                { section: 'customer-relationships', content: '用户支持', color: '#00bcd4' },
+                { section: 'customer-relationships', content: '会员计划', color: '#00bcd4' },
+                { section: 'cost-structure', content: '平台开发成本', color: '#795548' },
+                { section: 'cost-structure', content: '运营成本', color: '#795548' }
             ],
-            'SaaS Service': [
-                { section: 'value-propositions', content: 'Cloud-based software service', color: '#ffeb3b' },
-                { section: 'value-propositions', content: 'Automatic updates and maintenance', color: '#ffeb3b' },
-                { section: 'customer-segments', content: 'Small and medium businesses', color: '#2196f3' },
-                { section: 'customer-relationships', content: 'Subscription-based service', color: '#e91e63' },
-                { section: 'revenue-streams', content: 'Monthly/annual subscription fees', color: '#ff9800' },
-                { section: 'key-activities', content: 'Software development', color: '#4caf50' },
-                { section: 'key-activities', content: 'Customer support', color: '#4caf50' }
+            'SaaS服务': [
+                { section: 'value-propositions', content: '基于云的软件服务', color: '#ffeb3b' },
+                { section: 'value-propositions', content: '自动更新和维护', color: '#ffeb3b' },
+                { section: 'customer-segments', content: '中小企业', color: '#2196f3' },
+                { section: 'customer-relationships', content: '基于订阅的服务模式', color: '#e91e63' },
+                { section: 'revenue-streams', content: '月度/年度订阅费', color: '#ff9800' },
+                { section: 'key-activities', content: '软件开发', color: '#4caf50' },
+                { section: 'key-activities', content: '客户支持', color: '#4caf50' },
+                { section: 'key-partners', content: '云服务提供商', color: '#9c27b0' },
+                { section: 'key-resources', content: '技术人才', color: '#f44336' },
+                { section: 'channels', content: '直销', color: '#00bcd4' },
+                { section: 'channels', content: '合作伙伴', color: '#00bcd4' },
+                { section: 'cost-structure', content: '研发成本', color: '#795548' },
+                { section: 'cost-structure', content: '服务器成本', color: '#795548' }
+            ],
+            '线下零售店': [
+                { section: 'value-propositions', content: '个性化购物体验', color: '#ffeb3b' },
+                { section: 'value-propositions', content: '即时产品获取', color: '#ffeb3b' },
+                { section: 'customer-segments', content: '本地消费者', color: '#2196f3' },
+                { section: 'customer-segments', content: '特定产品爱好者', color: '#2196f3' },
+                { section: 'key-activities', content: '库存管理', color: '#4caf50' },
+                { section: 'key-activities', content: '客户服务', color: '#4caf50' },
+                { section: 'key-resources', content: '实体店铺', color: '#f44336' },
+                { section: 'key-resources', content: '专业团队', color: '#f44336' },
+                { section: 'revenue-streams', content: '产品销售收入', color: '#ff9800' },
+                { section: 'cost-structure', content: '租金成本', color: '#795548' },
+                { section: 'cost-structure', content: '人员成本', color: '#795548' }
             ]
         };
 
         const templateNames = Object.keys(templates);
-        const selectedTemplate = prompt(`Select template:\n${templateNames.map((name, index) => `${index + 1}. ${name}`).join('\n')}\n\nEnter template number:`);
+        const selectedTemplate = prompt(`选择模板:\n${templateNames.map((name, index) => `${index + 1}. ${name}`).join('\n')}\n\n请输入模板编号:`);
         
         if (selectedTemplate && templateNames[selectedTemplate - 1]) {
             const templateName = templateNames[selectedTemplate - 1];
-            if (confirm(`Are you sure you want to use the "${templateName}" template? This will replace all current notes.`)) {
+            if (confirm(`确定要使用"${templateName}"模板吗？这将替换当前所有便利贴。`)) {
                 this.notes = templates[templateName].map(note => ({
                     ...note,
                     id: Date.now().toString() + Math.random(),
@@ -328,15 +358,15 @@ class BusinessStrategyTool {
                 }));
                 this.saveNotes();
                 this.renderNotes();
-                this.showMessage(`"${templateName}" template loaded`, 'success');
+                this.showMessage(`已加载"${templateName}"模板`, 'success');
             }
         }
     }
 
     // SWOT分析功能
     addSWOTItem() {
-        const quadrant = prompt('Select quadrant:\n1. Strengths\n2. Weaknesses\n3. Opportunities\n4. Threats\n\nEnter quadrant number:');
-        const content = prompt('Enter item content:');
+        const quadrant = prompt('请选择SWOT象限:\n1. 优势\n2. 劣势\n3. 机会\n4. 威胁\n\n请输入象限编号:');
+        const content = prompt('请输入SWOT项目内容:');
         
         if (quadrant && content) {
             const quadrants = ['strengths', 'weaknesses', 'opportunities', 'threats'];
@@ -353,8 +383,12 @@ class BusinessStrategyTool {
                 this.swotItems.push(item);
                 this.saveSWOTItems();
                 this.renderSWOTItems();
-                this.showMessage('SWOT item added successfully', 'success');
+                this.showMessage('SWOT项目添加成功！', 'success');
+            } else {
+                this.showMessage('请输入有效的象限编号(1-4)', 'error');
             }
+        } else {
+            this.showMessage('请填写完整的SWOT项目信息', 'error');
         }
     }
 
@@ -392,16 +426,16 @@ class BusinessStrategyTool {
     }
 
     deleteSWOTItem(itemId) {
-        if (confirm('Are you sure you want to delete this item?')) {
+        if (confirm('确定要删除这个SWOT项目吗？')) {
             this.swotItems = this.swotItems.filter(item => item.id !== itemId);
             this.saveSWOTItems();
             this.renderSWOTItems();
-            this.showMessage('Item deleted', 'info');
+            this.showMessage('SWOT项目已删除', 'info');
         }
     }
 
     exportSWOT() {
-        this.showMessage('Generating SWOT analysis image...', 'info');
+        this.showMessage('正在生成SWOT分析图像，请稍候...', 'info');
         
         if (typeof html2canvas === 'undefined') {
             const script = document.createElement('script');
@@ -425,66 +459,147 @@ class BusinessStrategyTool {
             backgroundColor: '#f8fafc'
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `swot_analysis_${new Date().toISOString().split('T')[0]}.png`;
+            link.download = `SWOT分析_${new Date().toISOString().split('T')[0]}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            this.showMessage('SWOT analysis exported successfully!', 'success');
+            this.showMessage('SWOT分析导出成功！', 'success');
         }).catch(error => {
-            console.error('Export failed:', error);
-            this.showMessage('Export failed, please try again', 'error');
+            console.error('导出失败:', error);
+            this.showMessage('导出失败，请重试', 'error');
         });
     }
 
     clearSWOT() {
-        if (confirm('Are you sure you want to clear all SWOT items?')) {
+        if (confirm('确定要清空所有SWOT项目吗？此操作不可撤销！')) {
             this.swotItems = [];
             this.saveSWOTItems();
             this.renderSWOTItems();
-            this.showMessage('SWOT analysis cleared', 'info');
+            this.showMessage('SWOT分析已清空', 'info');
         }
     }
 
     // 价值主张画布功能
     editValueProposition() {
-        this.showMessage('Click on any section to edit content', 'info');
+        this.showMessage('请点击任何部分编辑价值主张内容', 'info');
     }
 
     editVPItem(itemId) {
         const currentContent = document.getElementById(itemId).textContent;
-        const newContent = prompt(`Edit ${itemId.replace('-', ' ')}:`, currentContent);
+        const displayName = itemId.replace('-', ' ').replace(/^\w/, c => c.toUpperCase());
+        const newContent = prompt(`请编辑 ${displayName}:`, currentContent);
         
-        if (newContent !== null) {
-            document.getElementById(itemId).textContent = newContent;
-            this.showMessage('Content updated successfully', 'success');
+        if (newContent !== null && newContent.trim() !== '') {
+            document.getElementById(itemId).textContent = newContent.trim();
+            this.showMessage('价值主张内容更新成功！', 'success');
+        } else if (newContent !== null && newContent.trim() === '') {
+            this.showMessage('内容不能为空，请重新输入', 'error');
         }
     }
 
     exportValueProposition() {
-        this.showMessage('Export feature coming soon!', 'info');
+        this.showMessage('价值主张画布导出功能即将上线！', 'info');
     }
 
     // 精益画布功能
     editLeanCanvas() {
-        this.showMessage('Click on any section to edit content', 'info');
+        this.showMessage('点击任何部分编辑内容', 'info');
     }
 
     editLeanSection(sectionId) {
         const currentContent = document.getElementById(sectionId).textContent;
-        const newContent = prompt(`Edit ${sectionId}:`, currentContent);
+        const newContent = prompt(`编辑 ${sectionId}:`, currentContent);
         
-        if (newContent !== null) {
-            document.getElementById(sectionId).textContent = newContent;
-            this.showMessage('Content updated successfully', 'success');
+        if (newContent !== null && newContent.trim() !== '') {
+            document.getElementById(sectionId).textContent = newContent.trim();
+            this.showMessage('内容更新成功', 'success');
+        } else if (newContent !== null && newContent.trim() === '') {
+            this.showMessage('内容不能为空，请重新输入', 'error');
         }
     }
 
     exportLeanCanvas() {
-        this.showMessage('Export feature coming soon!', 'info');
+        this.showMessage('导出功能即将上线！', 'info');
+    }
+
+    addLeanCanvasItem() {
+        const section = prompt('请选择部分:\n1. 问题\n2. 解决方案\n3. 关键指标\n4. 独特卖点\n5. 客户细分\n6. 渠道\n7. 收入来源\n8. 成本结构\n9. 门槛优势\n\n请输入部分编号:');
+        const content = prompt('请输入内容:');
+        
+        if (section && content) {
+            let sectionName;
+            switch(section) {
+                case '1':
+                    sectionName = 'problems';
+                    break;
+                case '2':
+                    sectionName = 'solutions';
+                    break;
+                case '3':
+                    sectionName = 'key-metrics';
+                    break;
+                case '4':
+                    sectionName = 'unique-value-proposition';
+                    break;
+                case '5':
+                    sectionName = 'customer-segments';
+                    break;
+                case '6':
+                    sectionName = 'channels';
+                    break;
+                case '7':
+                    sectionName = 'revenue-streams';
+                    break;
+                case '8':
+                    sectionName = 'cost-structure';
+                    break;
+                case '9':
+                    sectionName = 'unfair-advantage';
+                    break;
+                default:
+                    this.showMessage('请输入有效的部分编号(1-9)', 'error');
+                    return;
+            }
+            
+            const item = {
+                id: Date.now().toString(),
+                content: content,
+                section: sectionName,
+                timestamp: new Date().toISOString()
+            };
+            
+            if (!this.leanCanvasItems) this.leanCanvasItems = [];
+            this.leanCanvasItems.push(item);
+            if (this.saveLeanCanvasItems) this.saveLeanCanvasItems();
+            if (this.renderLeanCanvasItems) this.renderLeanCanvasItems();
+            this.showMessage('精益画布项目添加成功！', 'success');
+        } else {
+            this.showMessage('请填写完整的精益画布项目信息', 'error');
+        }
+    }
+
+    deleteLeanCanvasItem(itemId) {
+        if (confirm('确定要删除这个精益画布项目吗？')) {
+            if (this.leanCanvasItems) {
+                this.leanCanvasItems = this.leanCanvasItems.filter(item => item.id !== itemId);
+                if (this.saveLeanCanvasItems) this.saveLeanCanvasItems();
+                if (this.renderLeanCanvasItems) this.renderLeanCanvasItems();
+                this.showMessage('精益画布项目已删除', 'info');
+            }
+        }
+    }
+
+    clearLeanCanvas() {
+        if (confirm('确定要清空所有精益画布项目吗？此操作不可撤销！')) {
+            this.leanCanvasItems = [];
+            if (this.saveLeanCanvasItems) this.saveLeanCanvasItems();
+            if (this.renderLeanCanvasItems) this.renderLeanCanvasItems();
+            this.showMessage('所有精益画布项目已清空', 'info');
+        }
     }
 
     // 竞争分析功能
     addCompetitor() {
-        this.showMessage('Use the form below to add competitor information', 'info');
+        this.showMessage('请使用下面的表单添加竞争对手详细信息', 'info');
     }
 
     saveCompetitor() {
@@ -493,7 +608,7 @@ class BusinessStrategyTool {
         const weaknesses = document.getElementById('competitor-weaknesses').value.trim();
 
         if (!name) {
-            this.showMessage('Please enter competitor name', 'error');
+            this.showMessage('请输入竞争对手名称', 'error');
             return;
         }
 
@@ -514,7 +629,7 @@ class BusinessStrategyTool {
         document.getElementById('competitor-strengths').value = '';
         document.getElementById('competitor-weaknesses').value = '';
         
-        this.showMessage('Competitor added successfully', 'success');
+        this.showMessage(`竞争对手"${name}"添加成功！`, 'success');
     }
 
     renderCompetitors() {
@@ -538,7 +653,7 @@ class BusinessStrategyTool {
         if (competitor.strengths && competitor.strengths.length > 0) {
             strengthsHTML = `
                 <div class="competitor-strengths">
-                    <h4>Strengths</h4>
+                    <h4>优势</h4>
                     <ul class="competitor-list">
                         ${competitor.strengths.map(strength => `<li>${strength}</li>`).join('')}
                     </ul>
@@ -549,7 +664,7 @@ class BusinessStrategyTool {
         if (competitor.weaknesses && competitor.weaknesses.length > 0) {
             weaknessesHTML = `
                 <div class="competitor-weaknesses">
-                    <h4>Weaknesses</h4>
+                    <h4>劣势</h4>
                     <ul class="competitor-list">
                         ${competitor.weaknesses.map(weakness => `<li>${weakness}</li>`).join('')}
                     </ul>
@@ -561,28 +676,29 @@ class BusinessStrategyTool {
             <h3>${competitor.name}</h3>
             ${strengthsHTML}
             ${weaknessesHTML}
-            <button class="delete-btn" onclick="window.businessStrategyTool.deleteCompetitor('${competitor.id}')">Delete</button>
+            <button class="delete-btn" onclick="window.businessStrategyTool.deleteCompetitor('${competitor.id}')">删除</button>
         `;
 
         return card;
     }
 
     deleteCompetitor(competitorId) {
-        if (confirm('Are you sure you want to delete this competitor?')) {
-            this.competitors = this.competitors.filter(competitor => competitor.id !== competitorId);
+        const competitor = this.competitors.find(c => c.id === competitorId);
+        if (competitor && confirm(`确定要删除竞争对手"${competitor.name}"吗？`)) {
+            this.competitors = this.competitors.filter(c => c.id !== competitorId);
             this.saveCompetitors();
             this.renderCompetitors();
-            this.showMessage('Competitor deleted', 'info');
+            this.showMessage(`竞争对手"${competitor.name}"已删除`, 'info');
         }
     }
 
     exportCompetitiveAnalysis() {
-        this.showMessage('Export feature coming soon!', 'info');
+        this.showMessage('导出功能即将上线！', 'info');
     }
 
     // 财务规划功能
     addFinancialData() {
-        this.showMessage('Use the form below to enter financial data', 'info');
+        this.showMessage('使用下面的表单输入财务数据', 'info');
     }
 
     calculateFinancials() {
@@ -608,7 +724,7 @@ class BusinessStrategyTool {
 
         this.saveFinancialData();
         this.renderFinancialResults();
-        this.showMessage('Financial calculations completed', 'success');
+        this.showMessage('财务计算完成', 'success');
     }
 
     renderFinancialResults() {
@@ -616,39 +732,39 @@ class BusinessStrategyTool {
         const data = this.financialData;
 
         if (!data.monthlyRevenue) {
-            container.innerHTML = '<p>Enter financial data above to see results</p>';
+            container.innerHTML = '<p>请在上方输入财务数据查看结果</p>';
             return;
         }
 
         container.innerHTML = `
-            <h3>Financial Results</h3>
+            <h3>财务结果</h3>
             <table class="financial-table">
                 <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
+                    <th>指标</th>
+                    <th>数值</th>
                 </tr>
                 <tr>
-                    <td>Monthly Revenue</td>
+                    <td>月收入</td>
                     <td>$${data.monthlyRevenue.toLocaleString()}</td>
                 </tr>
                 <tr>
-                    <td>Monthly Expenses</td>
+                    <td>月支出</td>
                     <td>$${data.monthlyExpenses.toLocaleString()}</td>
                 </tr>
                 <tr>
-                    <td>Monthly Profit</td>
+                    <td>月利润</td>
                     <td>$${data.monthlyProfit.toLocaleString()}</td>
                 </tr>
                 <tr>
-                    <td>Annual Profit</td>
+                    <td>年利润</td>
                     <td>$${data.annualProfit.toLocaleString()}</td>
                 </tr>
                 <tr>
-                    <td>Break-even (months)</td>
+                    <td>收支平衡期（月）</td>
                     <td>${data.breakEvenMonths}</td>
                 </tr>
                 <tr>
-                    <td>ROI</td>
+                    <td>投资回报率(ROI)</td>
                     <td>${data.roi}%</td>
                 </tr>
             </table>
@@ -656,12 +772,12 @@ class BusinessStrategyTool {
     }
 
     exportFinancialPlan() {
-        this.showMessage('Export feature coming soon!', 'info');
+        this.showMessage('导出功能即将上线！', 'info');
     }
 
     // 市场分析功能
     addMarketData() {
-        this.showMessage('Use the form below to enter market data', 'info');
+        this.showMessage('请使用下面的表单输入市场数据', 'info');
     }
 
     calculateMarketShare() {
@@ -670,23 +786,75 @@ class BusinessStrategyTool {
         const som = document.getElementById('som-input').value;
 
         if (tam && sam && som) {
-            this.showMessage('Market share calculations completed', 'success');
+            this.showMessage('市场份额计算完成', 'success');
         } else {
-            this.showMessage('Please enter all market data fields', 'error');
+            this.showMessage('请填写所有市场数据字段', 'error');
         }
     }
 
     exportMarketAnalysis() {
-        this.showMessage('Export feature coming soon!', 'info');
+        this.showMessage('导出功能即将上线！', 'info');
     }
 
     // 商业计划书功能
-    generateBusinessPlan() {
-        this.showMessage('Business plan generation feature coming soon!', 'info');
+    saveBusinessPlan() {
+        const businessPlan = {
+            executiveSummary: document.getElementById('executive-summary').value,
+            companyDescription: document.getElementById('company-description').value,
+            marketAnalysis: document.getElementById('market-analysis').value,
+            organizationManagement: document.getElementById('organization-management').value,
+            productsServices: document.getElementById('products-services').value,
+            marketingSales: document.getElementById('marketing-sales').value,
+            financialPlan: document.getElementById('financial-plan').value,
+            updatedAt: new Date().toISOString()
+        };
+        
+        localStorage.setItem('businessPlan', JSON.stringify(businessPlan));
+        this.showMessage('商业计划书已成功保存！', 'success');
+    }
+
+    loadBusinessPlan() {
+        const businessPlan = JSON.parse(localStorage.getItem('businessPlan')) || {};
+        
+        document.getElementById('executive-summary').value = businessPlan.executiveSummary || '';
+        document.getElementById('company-description').value = businessPlan.companyDescription || '';
+        document.getElementById('market-analysis').value = businessPlan.marketAnalysis || '';
+        document.getElementById('organization-management').value = businessPlan.organizationManagement || '';
+        document.getElementById('products-services').value = businessPlan.productsServices || '';
+        document.getElementById('marketing-sales').value = businessPlan.marketingSales || '';
+        document.getElementById('financial-plan').value = businessPlan.financialPlan || '';
+        
+        if (Object.keys(businessPlan).length > 0) {
+            this.showMessage('已加载上次保存的商业计划书内容', 'info');
+        }
+    }
+
+    generateBusinessPlanTemplate() {
+        if (confirm('确定要使用商业计划书模板吗？这将替换当前所有内容。')) {
+            const template = {
+                executiveSummary: '本商业计划书旨在概述[公司名称]的商业理念、目标市场、竞争优势及财务规划。\n\n[公司名称]成立于[成立年份]，专注于[核心业务]，致力于为[目标客户]提供[核心价值]。\n\n本文档详细阐述了公司的战略规划、市场定位、运营模式及财务预测，为公司未来[X]年的发展提供清晰的路线图。',
+                companyDescription: '1. 公司使命\n[公司名称]的使命是[使命描述]。\n\n2. 公司愿景\n我们的愿景是[愿景描述]。\n\n3. 核心价值观\n- [价值观1]\n- [价值观2]\n- [价值观3]\n\n4. 公司历史\n公司成立于[成立年份]，由[创始人背景]创立。自成立以来，我们已[重要里程碑]。\n\n5. 法律结构\n公司采用[法律形式，如有限责任公司、股份有限公司等]形式，总部位于[总部地址]。',
+                marketAnalysis: '1. 行业概览\n[行业名称]行业目前正处于[发展阶段，如快速增长期、成熟期等]，市场规模达[市场规模]，年增长率约为[增长率]%。\n\n2. 目标市场\n我们的目标市场主要分为以下几类：\n- [目标市场1]\n- [目标市场2]\n- [目标市场3]\n\n3. 市场趋势\n当前市场主要趋势包括：\n- [趋势1]\n- [趋势2]\n- [趋势3]\n\n4. 竞争分析\n主要竞争对手包括：\n- [竞争对手1]：优势在于[优势]，劣势在于[劣势]\n- [竞争对手2]：优势在于[优势]，劣势在于[劣势]\n\n我们的竞争优势在于[核心竞争优势]。',
+                organizationManagement: '1. 管理团队\n- [姓名]：[职位]，负责[职责]，拥有[背景经验]\n- [姓名]：[职位]，负责[职责]，拥有[背景经验]\n- [姓名]：[职位]，负责[职责]，拥有[背景经验]\n\n2. 组织结构\n公司采用[组织结构类型，如扁平化、矩阵式等]组织结构，下设[部门1]、[部门2]、[部门3]等部门。\n\n3. 人员规划\n预计未来[X]年内，公司员工规模将从目前的[当前人数]人增长至[目标人数]人，主要增加[重点部门]的人员配置。',
+                productsServices: '1. 核心产品/服务\n- [产品/服务1]：[详细描述]，解决了[客户痛点]\n- [产品/服务2]：[详细描述]，解决了[客户痛点]\n- [产品/服务3]：[详细描述]，解决了[客户痛点]\n\n2. 产品/服务特点\n我们的产品/服务具有以下特点：\n- [特点1]\n- [特点2]\n- [特点3]\n\n3. 研发规划\n未来[X]年内，我们计划投入[研发资金]用于产品研发，重点开发[重点研发方向]。\n\n4. 知识产权\n公司目前拥有[专利数量]项专利，[商标数量]项商标，正在申请[申请中数量]项知识产权保护。',
+                marketingSales: '1. 营销策略\n我们将采用以下营销策略：\n- [营销渠道1]：[具体策略]\n- [营销渠道2]：[具体策略]\n- [营销渠道3]：[具体策略]\n\n2. 销售策略\n销售团队将采用[销售模式，如直销、代理等]模式，目标在[时间]内实现[销售目标]。\n\n3. 定价策略\n我们的定价策略基于[定价依据，如成本加成、竞争定价等]，具体价格为[价格区间]。\n\n4. 品牌建设\n品牌建设计划包括[品牌活动1]、[品牌活动2]、[品牌活动3]等，目标是在[时间]内建立[品牌目标]。',
+                financialPlan: '1. 收入预测\n未来[X]年的收入预测如下：\n- 第1年：[金额]\n- 第2年：[金额]\n- 第3年：[金额]\n主要收入来源为[收入来源1]、[收入来源2]、[收入来源3]。\n\n2. 支出预测\n主要支出包括：\n- 运营成本：[金额]\n- 人力成本：[金额]\n- 营销成本：[金额]\n- 研发成本：[金额]\n\n3. 盈利能力分析\n预计第[X]年实现盈利，净利润率约为[利润率]%。\n\n4. 资金需求\n公司目前需要[资金需求]资金，主要用于[用途1]、[用途2]、[用途3]。\n\n5. 投资回报\n投资者预计在[时间]内获得[回报率]%的投资回报。'
+            };
+            
+            document.getElementById('executive-summary').value = template.executiveSummary;
+            document.getElementById('company-description').value = template.companyDescription;
+            document.getElementById('market-analysis').value = template.marketAnalysis;
+            document.getElementById('organization-management').value = template.organizationManagement;
+            document.getElementById('products-services').value = template.productsServices;
+            document.getElementById('marketing-sales').value = template.marketingSales;
+            document.getElementById('financial-plan').value = template.financialPlan;
+            
+            this.showMessage('商业计划书模板已加载，请根据实际情况修改内容', 'success');
+        }
     }
 
     exportBusinessPlan() {
-        this.showMessage('Export feature coming soon!', 'info');
+        this.showMessage('导出功能即将上线！', 'info');
     }
 
     // 商业模式评估功能
@@ -697,15 +865,27 @@ class BusinessStrategyTool {
         
         ratingElement.textContent = '★'.repeat(newRating) + '☆'.repeat(5 - newRating);
         
-        this.assessmentScores[criterionId] = newRating * 2; // Convert to 10-point scale
+        this.assessmentScores[criterionId] = newRating * 2; // 转换为10分制
         this.saveAssessmentScores();
         this.updateAssessmentScores();
-        this.showMessage('Rating updated', 'success');
+        this.showMessage('评分已更新', 'success');
     }
 
     updateAssessmentScores() {
         const scores = this.assessmentScores;
         const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+        const averageScore = Math.round(totalScore / Object.values(scores).length);
+        
+        let message = '';
+        if (averageScore >= 80) {
+            message = '您的商业模式非常出色！';
+        } else if (averageScore >= 60) {
+            message = '您的商业模式良好，但仍有改进空间。';
+        } else if (averageScore >= 40) {
+            message = '您的商业模式需要显著改进。';
+        } else {
+            message = '您的商业模式需要从根本上重新设计。';
+        }
         
         document.getElementById('total-score').textContent = `${totalScore}/100`;
         document.getElementById('value-score').textContent = scores['value-clarity'] || 0;
@@ -713,15 +893,19 @@ class BusinessStrategyTool {
         document.getElementById('profit-score').textContent = scores['profit-model'] || 0;
         document.getElementById('advantage-score').textContent = scores['competitive-advantage'] || 0;
         document.getElementById('scalability-score').textContent = scores['scalability'] || 0;
+        
+        // 假设这些元素存在于HTML中
+        document.getElementById('business-model-average-score')?.textContent = averageScore;
+        document.getElementById('business-model-feedback')?.textContent = message;
     }
 
     // 思维框架功能
     createCustomFramework() {
-        this.showMessage('Custom framework creation feature coming soon!', 'info');
+        this.showMessage('自定义框架创建功能即将上线！', 'info');
     }
 
     exportThinkingFrameworks() {
-        this.showMessage('Export feature coming soon!', 'info');
+        this.showMessage('导出功能即将上线！', 'info');
     }
 
     // 移动端菜单
@@ -798,9 +982,13 @@ class BusinessStrategyTool {
 
     // 消息提示功能
     showMessage(message, type = 'info') {
-        const messageDiv = document.createElement('div');
-        messageDiv.textContent = message;
-        messageDiv.style.cssText = `
+        // 创建消息容器
+        const messageContainer = document.createElement('div');
+        messageContainer.className = `notification notification-${type}`;
+        messageContainer.textContent = message;
+        
+        // 设置基本样式
+        messageContainer.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
@@ -813,27 +1001,47 @@ class BusinessStrategyTool {
             transform: translateX(100%);
             box-shadow: var(--shadow-lg);
             font-size: 14px;
+            min-width: 250px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         `;
 
+        // 设置不同类型消息的背景色
         const colors = {
-            success: '#059669',
-            error: '#dc2626',
-            info: '#2563eb',
-            warning: '#d97706'
+            success: '#059669', // 成功 - 绿色
+            error: '#dc2626',   // 错误 - 红色
+            info: '#2563eb',    // 信息 - 蓝色
+            warning: '#d97706'  // 警告 - 橙色
         };
-        messageDiv.style.backgroundColor = colors[type] || colors.info;
+        messageContainer.style.backgroundColor = colors[type] || colors.info;
 
-        document.body.appendChild(messageDiv);
+        // 添加消息图标
+        const icon = document.createElement('span');
+        const icons = {
+            success: '✓',
+            error: '✗',
+            info: 'ℹ',
+            warning: '!'
+        };
+        icon.textContent = icons[type] || icons.info;
+        icon.style.fontWeight = 'bold';
+        messageContainer.prepend(icon);
 
+        // 添加到页面
+        document.body.appendChild(messageContainer);
+
+        // 显示消息
         setTimeout(() => {
-            messageDiv.style.transform = 'translateX(0)';
+            messageContainer.style.transform = 'translateX(0)';
         }, 100);
 
+        // 3秒后隐藏消息
         setTimeout(() => {
-            messageDiv.style.transform = 'translateX(100%)';
+            messageContainer.style.transform = 'translateX(100%)';
             setTimeout(() => {
-                if (messageDiv.parentNode) {
-                    messageDiv.parentNode.removeChild(messageDiv);
+                if (messageContainer.parentNode) {
+                    messageContainer.parentNode.removeChild(messageContainer);
                 }
             }, 300);
         }, 3000);
@@ -959,14 +1167,14 @@ if (!localStorage.getItem('businessModelCanvas') && localStorage.getItem('firstV
         {
             id: '1',
             section: 'value-propositions',
-            content: 'Provide high-quality products and services',
+            content: '提供高质量的产品和服务',
             color: '#ffeb3b',
             timestamp: new Date().toISOString()
         },
         {
             id: '2',
             section: 'customer-segments',
-            content: 'Young professionals',
+            content: '年轻专业人士',
             color: '#2196f3',
             timestamp: new Date().toISOString()
         }

@@ -2,7 +2,7 @@
 
 // 导入工具模块
 import { getItem, setItem, removeItem } from './utils/storage.js';
-import { showMessage, showModal, $, $$ } from './utils/dom.js';
+import { showMessage, showModal, $, $$, debounce } from './utils/dom.js';
 
 // 导入功能模块
 import { SWOT, PorterFiveForces, PESTAnalysis, BCGMatrix, ThinkingFrameworks } from './modules/models.js';
@@ -180,7 +180,7 @@ export class BusinessAnalysisApp {
     // 设置自动保存
     const canvasElements = document.querySelectorAll('[id^="canvas-"]');
     canvasElements.forEach(element => {
-      element.addEventListener('input', this.debounce(() => {
+      element.addEventListener('input', debounce(() => {
         BusinessModelCanvas.saveData();
       }, 1000));
     });
@@ -234,7 +234,7 @@ export class BusinessAnalysisApp {
     // 设置自动保存 - 选择所有价值主张画布相关的元素
     const vpElements = document.querySelectorAll('#customer-jobs, #pains, #gains, #products-services, #pain-relievers, #gain-creators');
     vpElements.forEach(element => {
-      element.addEventListener('input', this.debounce(() => {
+      element.addEventListener('input', debounce(() => {
         ValuePropositionCanvas.saveData();
       }, 1000));
     });
@@ -348,7 +348,7 @@ export class BusinessAnalysisApp {
     // 设置自动保存
     const leanElements = document.querySelectorAll('[id^="lean-"]');
     leanElements.forEach(element => {
-      element.addEventListener('input', this.debounce(() => {
+      element.addEventListener('input', debounce(() => {
         LeanCanvas.saveData();
       }, 1000));
     });
@@ -726,12 +726,12 @@ export class BusinessAnalysisApp {
     // 设置自动保存
     const rfmElements = document.querySelectorAll('[id^="rfm-"]');
     rfmElements.forEach(element => {
-      if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
-        element.addEventListener('input', this.debounce(() => {
-          RFMModel.saveData();
-        }, 2000));
-      }
-    });
+        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+          element.addEventListener('input', debounce(() => {
+            RFMModel.saveData();
+          }, 2000));
+        }
+      });
   }
   
   /**

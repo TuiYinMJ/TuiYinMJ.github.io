@@ -2,6 +2,7 @@
 
 import { saveFormData, loadFormData, generateReportContent, downloadTextFile } from '../utils/dataManager.js';
 import { $ } from '../utils/dom.js';
+import { eventManager, ErrorUtils } from '../utils/advancedUtils.js';
 
 /**
  * 商业模式画布功能
@@ -11,45 +12,64 @@ export const BusinessModelCanvas = {
    * 保存商业模式画布数据
    */
   saveData: () => {
-    const sections = [
-      'keyPartners', 'keyActivities', 'keyResources', 'valuePropositions', 
-      'customerRelationships', 'channels', 'customerSegments', 'costStructure', 'revenueStreams'
-    ];
-    
-    return saveFormData('businessModelCanvasData', sections, 'canvas-');
+    return ErrorUtils.safeExecute(() => {
+      const sections = [
+        'keyPartners', 'keyActivities', 'keyResources', 'valuePropositions', 
+        'customerRelationships', 'channels', 'customerSegments', 'costStructure', 'revenueStreams'
+      ];
+      
+      const result = saveFormData('businessModelCanvasData', sections, 'canvas-');
+      
+      // 触发事件
+      eventManager.emit('businessModelCanvas:dataSaved', result);
+      
+      return result;
+    });
   },
   
   /**
    * 从本地存储加载商业模式画布数据
    */
   loadData: () => {
-    return loadFormData('businessModelCanvasData', 'canvas-');
+    return ErrorUtils.safeExecute(() => {
+      const result = loadFormData('businessModelCanvasData', 'canvas-');
+      
+      // 触发事件
+      eventManager.emit('businessModelCanvas:dataLoaded', result);
+      
+      return result;
+    });
   },
   
   /**
    * 导出商业模式画布报告
    */
   exportReport: () => {
-    const sections = {
-      keyPartners: '关键合作伙伴',
-      keyActivities: '关键业务',
-      keyResources: '核心资源',
-      valuePropositions: '价值主张',
-      customerRelationships: '客户关系',
-      channels: '渠道通路',
-      customerSegments: '客户细分',
-      costStructure: '成本结构',
-      revenueStreams: '收入来源'
-    };
-    
-    const getContentCallback = (key) => {
-      const element = $(`canvas-${key}`);
-      return element && element.value.trim() ? element.value : '暂无内容';
-    };
-    
-    const reportContent = generateReportContent(sections, '商业模式画布分析报告', getContentCallback);
-    
-    downloadTextFile(reportContent, '商业模式画布分析报告.txt');
+    ErrorUtils.safeExecute(() => {
+      const sections = {
+        keyPartners: '关键合作伙伴',
+        keyActivities: '关键业务',
+        keyResources: '核心资源',
+        valuePropositions: '价值主张',
+        customerRelationships: '客户关系',
+        channels: '渠道通路',
+        customerSegments: '客户细分',
+        costStructure: '成本结构',
+        revenueStreams: '收入来源'
+      };
+      
+      const getContentCallback = (key) => {
+        const element = $(`canvas-${key}`);
+        return element && element.value.trim() ? element.value : '暂无内容';
+      };
+      
+      const reportContent = generateReportContent(sections, '商业模式画布分析报告', getContentCallback);
+      
+      downloadTextFile(reportContent, '商业模式画布分析报告.txt');
+      
+      // 触发事件
+      eventManager.emit('businessModelCanvas:reportExported', reportContent);
+    });
   }
 };
 
@@ -61,54 +81,64 @@ export const ValuePropositionCanvas = {
    * 保存价值主张画布数据
    */
   saveData: () => {
-    const customerSections = ['jobs', 'pains', 'gains'];
-    const productSections = ['products', 'painRelievers', 'gainCreators'];
-    
-    const data = {};
-    
-    // 保存客户部分
-    customerSections.forEach(section => {
-      const element = document.getElementById(`vp-customer-${section}`);
-      if (element) {
-        data[`customer${section.charAt(0).toUpperCase() + section.slice(1)}`] = element.value;
-      }
+    ErrorUtils.safeExecute(() => {
+      const customerSections = ['jobs', 'pains', 'gains'];
+      const productSections = ['products', 'painRelievers', 'gainCreators'];
+      
+      const data = {};
+      
+      // 保存客户部分
+      customerSections.forEach(section => {
+        const element = $(`vp-customer-${section}`);
+        if (element) {
+          data[`customer${section.charAt(0).toUpperCase() + section.slice(1)}`] = element.value;
+        }
+      });
+      
+      // 保存产品服务部分
+      productSections.forEach(section => {
+        const element = $(`vp-product-${section}`);
+        if (element) {
+          data[`product${section.charAt(0).toUpperCase() + section.slice(1)}`] = element.value;
+        }
+      });
+      
+      data.lastUpdated = new Date().toISOString();
+      localStorage.setItem('valuePropositionCanvasData', JSON.stringify(data));
+      
+      // 触发事件
+      eventManager.emit('valuePropositionCanvas:dataSaved', data);
     });
-    
-    // 保存产品服务部分
-    productSections.forEach(section => {
-      const element = document.getElementById(`vp-product-${section}`);
-      if (element) {
-        data[`product${section.charAt(0).toUpperCase() + section.slice(1)}`] = element.value;
-      }
-    });
-    
-    data.lastUpdated = new Date().toISOString();
-    localStorage.setItem('valuePropositionCanvasData', JSON.stringify(data));
   },
   
   /**
    * 从本地存储加载价值主张画布数据
    */
   loadData: () => {
-    const data = JSON.parse(localStorage.getItem('valuePropositionCanvasData') || '{}');
-    
-    Object.entries(data).forEach(([key, value]) => {
-      if (key !== 'lastUpdated') {
-        let elementId = '';
-        
-        if (key.startsWith('customer')) {
-          const section = key.replace('customer', '');
-          elementId = `vp-customer-${section.charAt(0).toLowerCase() + section.slice(1)}`;
-        } else if (key.startsWith('product')) {
-          const section = key.replace('product', '');
-          elementId = `vp-product-${section.charAt(0).toLowerCase() + section.slice(1)}`;
+    ErrorUtils.safeExecute(() => {
+      const data = JSON.parse(localStorage.getItem('valuePropositionCanvasData') || '{}');
+      
+      Object.entries(data).forEach(([key, value]) => {
+        if (key !== 'lastUpdated') {
+          let elementId = '';
+          
+          if (key.startsWith('customer')) {
+            const section = key.replace('customer', '');
+            elementId = `vp-customer-${section.charAt(0).toLowerCase() + section.slice(1)}`;
+          } else if (key.startsWith('product')) {
+            const section = key.replace('product', '');
+            elementId = `vp-product-${section.charAt(0).toLowerCase() + section.slice(1)}`;
+          }
+          
+          const element = $(elementId);
+          if (element) {
+            element.value = value;
+          }
         }
-        
-        const element = document.getElementById(elementId);
-        if (element) {
-          element.value = value;
-        }
-      }
+      });
+      
+      // 触发事件
+      eventManager.emit('valuePropositionCanvas:dataLoaded', data);
     });
   },
   
@@ -116,60 +146,56 @@ export const ValuePropositionCanvas = {
    * 导出价值主张画布报告
    */
   exportReport: () => {
-    const customerSections = {
-      jobs: '客户任务',
-      pains: '客户痛点',
-      gains: '客户收益'
-    };
-    
-    const productSections = {
-      products: '产品与服务',
-      painRelievers: '痛点缓解方案',
-      gainCreators: '收益创造方案'
-    };
-    
-    let reportContent = '价值主张画布分析报告\n';
-    reportContent += '=====================\n\n';
-    
-    // 客户部分
-    reportContent += '【客户概况】\n';
-    reportContent += '------------\n';
-    Object.entries(customerSections).forEach(([key, label]) => {
-      reportContent += `* ${label}:\n`;
-      const element = document.getElementById(`vp-customer-${key}`);
-      if (element && element.value.trim()) {
-        reportContent += element.value + '\n\n';
-      } else {
-        reportContent += '  暂无内容\n\n';
-      }
+    ErrorUtils.safeExecute(() => {
+      const customerSections = {
+        jobs: '客户任务',
+        pains: '客户痛点',
+        gains: '客户收益'
+      };
+      
+      const productSections = {
+        products: '产品与服务',
+        painRelievers: '痛点缓解方案',
+        gainCreators: '收益创造方案'
+      };
+      
+      let reportContent = '价值主张画布分析报告\n';
+      reportContent += '=====================\n\n';
+      
+      // 客户部分
+      reportContent += '【客户概况】\n';
+      reportContent += '------------\n';
+      Object.entries(customerSections).forEach(([key, label]) => {
+        reportContent += `* ${label}:\n`;
+        const element = $(`vp-customer-${key}`);
+        if (element && element.value.trim()) {
+          reportContent += element.value + '\n\n';
+        } else {
+          reportContent += '  暂无内容\n\n';
+        }
+      });
+      
+      // 产品服务部分
+      reportContent += '【产品与服务】\n';
+      reportContent += '------------\n';
+      Object.entries(productSections).forEach(([key, label]) => {
+        reportContent += `* ${label}:\n`;
+        const element = $(`vp-product-${key}`);
+        if (element && element.value.trim()) {
+          reportContent += element.value + '\n\n';
+        } else {
+          reportContent += '  暂无内容\n\n';
+        }
+      });
+      
+      // 生成日期
+      reportContent += `报告生成日期: ${new Date().toLocaleString()}\n`;
+      
+      downloadTextFile(reportContent, '价值主张画布分析报告.txt');
+      
+      // 触发事件
+      eventManager.emit('valuePropositionCanvas:reportExported', reportContent);
     });
-    
-    // 产品服务部分
-    reportContent += '【产品与服务】\n';
-    reportContent += '------------\n';
-    Object.entries(productSections).forEach(([key, label]) => {
-      reportContent += `* ${label}:\n`;
-      const element = document.getElementById(`vp-product-${key}`);
-      if (element && element.value.trim()) {
-        reportContent += element.value + '\n\n';
-      } else {
-        reportContent += '  暂无内容\n\n';
-      }
-    });
-    
-    // 生成日期
-    reportContent += `报告生成日期: ${new Date().toLocaleString()}\n`;
-    
-    // 创建下载链接
-    const blob = new Blob([reportContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '价值主张画布分析报告.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   }
 };
 
@@ -181,36 +207,46 @@ export const LeanCanvas = {
    * 保存精益画布数据
    */
   saveData: () => {
-    const sections = [
-      'problem', 'solution', 'keyMetrics', 'uniqueValueProposition', 
-      'unfairAdvantage', 'channels', 'customerSegments', 'costStructure', 'revenueStreams'
-    ];
-    
-    const data = {};
-    sections.forEach(section => {
-      const element = document.getElementById(`lean-${section}`);
-      if (element) {
-        data[section] = element.value;
-      }
+    ErrorUtils.safeExecute(() => {
+      const sections = [
+        'problem', 'solution', 'keyMetrics', 'uniqueValueProposition', 
+        'unfairAdvantage', 'channels', 'customerSegments', 'costStructure', 'revenueStreams'
+      ];
+      
+      const data = {};
+      sections.forEach(section => {
+        const element = $(`lean-${section}`);
+        if (element) {
+          data[section] = element.value;
+        }
+      });
+      
+      data.lastUpdated = new Date().toISOString();
+      localStorage.setItem('leanCanvasData', JSON.stringify(data));
+      
+      // 触发事件
+      eventManager.emit('leanCanvas:dataSaved', data);
     });
-    
-    data.lastUpdated = new Date().toISOString();
-    localStorage.setItem('leanCanvasData', JSON.stringify(data));
   },
   
   /**
    * 从本地存储加载精益画布数据
    */
   loadData: () => {
-    const data = JSON.parse(localStorage.getItem('leanCanvasData') || '{}');
-    
-    Object.entries(data).forEach(([key, value]) => {
-      if (key !== 'lastUpdated') {
-        const element = document.getElementById(`lean-${key}`);
-        if (element) {
-          element.value = value;
+    ErrorUtils.safeExecute(() => {
+      const data = JSON.parse(localStorage.getItem('leanCanvasData') || '{}');
+      
+      Object.entries(data).forEach(([key, value]) => {
+        if (key !== 'lastUpdated') {
+          const element = $(`lean-${key}`);
+          if (element) {
+            element.value = value;
+          }
         }
-      }
+      });
+      
+      // 触发事件
+      eventManager.emit('leanCanvas:dataLoaded', data);
     });
   },
   
@@ -218,44 +254,40 @@ export const LeanCanvas = {
    * 导出精益画布报告
    */
   exportReport: () => {
-    const sections = {
-      problem: '问题',
-      solution: '解决方案',
-      keyMetrics: '关键指标',
-      uniqueValueProposition: '独特价值主张',
-      unfairAdvantage: '竞争优势',
-      channels: '渠道',
-      customerSegments: '客户细分',
-      costStructure: '成本结构',
-      revenueStreams: '收入来源'
-    };
-    
-    let reportContent = '精益画布分析报告\n';
-    reportContent += '=============\n\n';
-    
-    Object.entries(sections).forEach(([key, label]) => {
-      reportContent += `【${label}】\n`;
-      const element = document.getElementById(`lean-${key}`);
-      if (element && element.value.trim()) {
-        reportContent += element.value + '\n\n';
-      } else {
-        reportContent += '暂无内容\n\n';
-      }
+    ErrorUtils.safeExecute(() => {
+      const sections = {
+        problem: '问题',
+        solution: '解决方案',
+        keyMetrics: '关键指标',
+        uniqueValueProposition: '独特价值主张',
+        unfairAdvantage: '竞争优势',
+        channels: '渠道',
+        customerSegments: '客户细分',
+        costStructure: '成本结构',
+        revenueStreams: '收入来源'
+      };
+      
+      let reportContent = '精益画布分析报告\n';
+      reportContent += '=============\n\n';
+      
+      Object.entries(sections).forEach(([key, label]) => {
+        reportContent += `【${label}】\n`;
+        const element = $(`lean-${key}`);
+        if (element && element.value.trim()) {
+          reportContent += element.value + '\n\n';
+        } else {
+          reportContent += '暂无内容\n\n';
+        }
+      });
+      
+      // 生成日期
+      reportContent += `报告生成日期: ${new Date().toLocaleString()}\n`;
+      
+      downloadTextFile(reportContent, '精益画布分析报告.txt');
+      
+      // 触发事件
+      eventManager.emit('leanCanvas:reportExported', reportContent);
     });
-    
-    // 生成日期
-    reportContent += `报告生成日期: ${new Date().toLocaleString()}\n`;
-    
-    // 创建下载链接
-    const blob = new Blob([reportContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '精益画布分析报告.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   }
 };
 
@@ -267,38 +299,48 @@ export const BusinessModelEvaluation = {
    * 保存评估数据
    */
   saveEvaluationData: () => {
-    const criteria = [
-      'valuePropositionClarity', 'customerSegmentFit', 'revenuePotential',
-      'costStructureFeasibility', 'competitiveAdvantage'
-    ];
-    
-    const data = {};
-    criteria.forEach(criterion => {
-      const element = document.getElementById(`${criterion}-rating`);
-      if (element) {
-        data[criterion] = parseInt(element.value) || 0;
-      }
+    ErrorUtils.safeExecute(() => {
+      const criteria = [
+        'valuePropositionClarity', 'customerSegmentFit', 'revenuePotential',
+        'costStructureFeasibility', 'competitiveAdvantage'
+      ];
+      
+      const data = {};
+      criteria.forEach(criterion => {
+        const element = $(`${criterion}-rating`);
+        if (element) {
+          data[criterion] = parseInt(element.value) || 0;
+        }
+      });
+      
+      data.lastUpdated = new Date().toISOString();
+      localStorage.setItem('businessModelEvaluationData', JSON.stringify(data));
+      
+      // 触发事件
+      eventManager.emit('businessModelEvaluation:dataSaved', data);
     });
-    
-    data.lastUpdated = new Date().toISOString();
-    localStorage.setItem('businessModelEvaluationData', JSON.stringify(data));
   },
   
   /**
    * 从本地存储加载评估数据
    */
   loadEvaluationData: () => {
-    const data = JSON.parse(localStorage.getItem('businessModelEvaluationData') || '{}');
-    
-    Object.entries(data).forEach(([key, value]) => {
-      if (key !== 'lastUpdated') {
-        const element = document.getElementById(`${key}-rating`);
-        if (element) {
-          element.value = value;
-          // 更新星星显示
-          BusinessModelEvaluation.updateStars(key, value);
+    ErrorUtils.safeExecute(() => {
+      const data = JSON.parse(localStorage.getItem('businessModelEvaluationData') || '{}');
+      
+      Object.entries(data).forEach(([key, value]) => {
+        if (key !== 'lastUpdated') {
+          const element = $(`${key}-rating`);
+          if (element) {
+            element.value = value;
+            // 更新星星显示
+            BusinessModelEvaluation.updateStars(key, value);
+          }
         }
-      }
+      });
+      
+      // 触发事件
+      eventManager.emit('businessModelEvaluation:dataLoaded', data);
     });
   },
   
@@ -308,91 +350,98 @@ export const BusinessModelEvaluation = {
    * @param {number} rating - 评分
    */
   updateStars: (criterion, rating) => {
-    const starsContainer = document.getElementById(`${criterion}-stars`);
-    if (!starsContainer) return;
-    
-    // 清空现有星星
-    starsContainer.innerHTML = '';
-    
-    // 创建星星
-    for (let i = 1; i <= 5; i++) {
-      const star = document.createElement('span');
-      star.className = `star ${i <= rating ? 'filled' : 'empty'}`;
-      star.textContent = '★';
-      star.addEventListener('click', () => {
-        // 更新选择框值
-        const selectElement = document.getElementById(`${criterion}-rating`);
-        if (selectElement) {
-          selectElement.value = i;
-          // 保存数据
-          BusinessModelEvaluation.saveEvaluationData();
-          // 更新星星显示
-          BusinessModelEvaluation.updateStars(criterion, i);
-        }
-      });
-      starsContainer.appendChild(star);
-    }
+    ErrorUtils.safeExecute(() => {
+      const starsContainer = $(`${criterion}-stars`);
+      if (!starsContainer) return;
+      
+      // 清空现有星星
+      starsContainer.innerHTML = '';
+      
+      // 创建星星
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('span');
+        star.className = `star ${i <= rating ? 'filled' : 'empty'}`;
+        star.textContent = '★';
+        star.addEventListener('click', () => {
+          // 更新选择框值
+          const selectElement = $(`${criterion}-rating`);
+          if (selectElement) {
+            selectElement.value = i;
+            // 保存数据
+            BusinessModelEvaluation.saveEvaluationData();
+            // 更新星星显示
+            BusinessModelEvaluation.updateStars(criterion, i);
+          }
+        });
+        starsContainer.appendChild(star);
+      }
+    });
   },
   
   /**
    * 生成评估报告
    */
   generateReport: () => {
-    const criteria = {
-      valuePropositionClarity: {
-        label: '价值主张清晰度',
-        description: '评估商业模式的核心价值主张是否清晰、明确且有吸引力'
-      },
-      customerSegmentFit: {
-        label: '客户细分匹配度',
-        description: '评估产品或服务与目标客户需求的匹配程度'
-      },
-      revenuePotential: {
-        label: '收入潜力',
-        description: '评估商业模式的收入规模和增长潜力'
-      },
-      costStructureFeasibility: {
-        label: '成本结构可行性',
-        description: '评估商业模式的成本结构是否合理且可持续'
-      },
-      competitiveAdvantage: {
-        label: '竞争优势',
-        description: '评估商业模式相对于竞争对手的独特优势和壁垒'
-      }
-    };
-    
-    let totalScore = 0;
-    let criteriaCount = 0;
-    
-    let reportContent = '商业模式评估报告\n';
-    reportContent += '=============\n\n';
-    
-    Object.entries(criteria).forEach(([key, info]) => {
-      const element = document.getElementById(`${key}-rating`);
-      const score = element ? parseInt(element.value) || 0 : 0;
+    return ErrorUtils.safeExecute(() => {
+      const criteria = {
+        valuePropositionClarity: {
+          label: '价值主张清晰度',
+          description: '评估商业模式的核心价值主张是否清晰、明确且有吸引力'
+        },
+        customerSegmentFit: {
+          label: '客户细分匹配度',
+          description: '评估产品或服务与目标客户需求的匹配程度'
+        },
+        revenuePotential: {
+          label: '收入潜力',
+          description: '评估商业模式的收入规模和增长潜力'
+        },
+        costStructureFeasibility: {
+          label: '成本结构可行性',
+          description: '评估商业模式的成本结构是否合理且可持续'
+        },
+        competitiveAdvantage: {
+          label: '竞争优势',
+          description: '评估商业模式相对于竞争对手的独特优势和壁垒'
+        }
+      };
       
-      reportContent += `【${info.label}】\n`;
-      reportContent += `描述: ${info.description}\n`;
-      reportContent += `评分: ${score}/5 分\n`;
-      reportContent += `评价: ${BusinessModelEvaluation.getRatingText(score)}\n\n`;
+      let totalScore = 0;
+      let criteriaCount = 0;
       
-      totalScore += score;
-      criteriaCount++;
-    });
-    
-    // 计算平均得分
-    const averageScore = criteriaCount > 0 ? totalScore / criteriaCount : 0;
-    
-    reportContent += `总体评分: ${averageScore.toFixed(1)}/5 分\n`;
-    reportContent += `总体评价: ${BusinessModelEvaluation.getOverallRatingText(averageScore)}\n\n`;
-    
-    // 生成日期
-    reportContent += `报告生成日期: ${new Date().toLocaleString()}\n`;
-    
-    return {
-      success: true,
-      content: reportContent
-    };
+      let reportContent = '商业模式评估报告\n';
+      reportContent += '=============\n\n';
+      
+      Object.entries(criteria).forEach(([key, info]) => {
+        const element = $(`${key}-rating`);
+        const score = element ? parseInt(element.value) || 0 : 0;
+        
+        reportContent += `【${info.label}】\n`;
+        reportContent += `描述: ${info.description}\n`;
+        reportContent += `评分: ${score}/5 分\n`;
+        reportContent += `评价: ${BusinessModelEvaluation.getRatingText(score)}\n\n`;
+        
+        totalScore += score;
+        criteriaCount++;
+      });
+      
+      // 计算平均得分
+      const averageScore = criteriaCount > 0 ? totalScore / criteriaCount : 0;
+      
+      reportContent += `总体评分: ${averageScore.toFixed(1)}/5 分\n`;
+      reportContent += `总体评价: ${BusinessModelEvaluation.getOverallRatingText(averageScore)}\n\n`;
+      
+      // 生成日期
+      reportContent += `报告生成日期: ${new Date().toLocaleString()}\n`;
+      
+      // 触发事件
+      eventManager.emit('businessModelEvaluation:reportGenerated', reportContent);
+      
+      return {
+        success: true,
+        content: reportContent
+      };
+    }, { success: false, error: '生成商业模式评估报告时发生错误' });
   },
   
   /**
@@ -429,18 +478,16 @@ export const BusinessModelEvaluation = {
    * 导出评估报告
    */
   exportReport: () => {
-    const report = BusinessModelEvaluation.generateReport();
-    
-    // 创建下载链接
-    const blob = new Blob([report.content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '商业模式评估报告.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    ErrorUtils.safeExecute(() => {
+      const report = BusinessModelEvaluation.generateReport();
+      
+      if (report.success) {
+        downloadTextFile(report.content, '商业模式评估报告.txt');
+        
+        // 触发事件
+        eventManager.emit('businessModelEvaluation:reportExported');
+      }
+    });
   }
 };
 
@@ -455,21 +502,27 @@ export const StickyNotes = {
    * @param {string} areaId - 区域ID
    */
   addNote: (content, color, areaId) => {
-    if (!content.trim() || !areaId) return false;
-    
-    const noteId = `note-${Date.now()}`;
-    const notes = StickyNotes.getNotes(areaId);
-    
-    const newNote = {
-      id: noteId,
-      content: content.trim(),
-      color: color || '#FFEAA7',
-      createdAt: new Date().toISOString()
-    };
-    
-    notes.push(newNote);
-    StickyNotes.saveNotes(areaId, notes);
-    return newNote;
+    return ErrorUtils.safeExecute(() => {
+      if (!content.trim() || !areaId) return false;
+      
+      const noteId = `note-${Date.now()}`;
+      const notes = StickyNotes.getNotes(areaId);
+      
+      const newNote = {
+        id: noteId,
+        content: content.trim(),
+        color: color || '#FFEAA7',
+        createdAt: new Date().toISOString()
+      };
+      
+      notes.push(newNote);
+      StickyNotes.saveNotes(areaId, notes);
+      
+      // 触发事件
+      eventManager.emit('stickyNotes:noteAdded', newNote, areaId);
+      
+      return newNote;
+    }, false);
   },
   
   /**
@@ -478,9 +531,11 @@ export const StickyNotes = {
    * @returns {Array} 便利贴数组
    */
   getNotes: (areaId) => {
-    const key = `stickyNotes_${areaId}`;
-    const notes = localStorage.getItem(key);
-    return notes ? JSON.parse(notes) : [];
+    return ErrorUtils.safeExecute(() => {
+      const key = `stickyNotes_${areaId}`;
+      const notes = localStorage.getItem(key);
+      return notes ? JSON.parse(notes) : [];
+    }, []);
   },
   
   /**
@@ -489,8 +544,13 @@ export const StickyNotes = {
    * @param {Array} notes - 便利贴数组
    */
   saveNotes: (areaId, notes) => {
-    const key = `stickyNotes_${areaId}`;
-    localStorage.setItem(key, JSON.stringify(notes));
+    ErrorUtils.safeExecute(() => {
+      const key = `stickyNotes_${areaId}`;
+      localStorage.setItem(key, JSON.stringify(notes));
+      
+      // 触发事件
+      eventManager.emit('stickyNotes:notesSaved', notes, areaId);
+    });
   },
   
   /**
@@ -499,9 +559,14 @@ export const StickyNotes = {
    * @param {string} areaId - 区域ID
    */
   deleteNote: (noteId, areaId) => {
-    const notes = StickyNotes.getNotes(areaId);
-    const filteredNotes = notes.filter(note => note.id !== noteId);
-    StickyNotes.saveNotes(areaId, filteredNotes);
+    ErrorUtils.safeExecute(() => {
+      const notes = StickyNotes.getNotes(areaId);
+      const filteredNotes = notes.filter(note => note.id !== noteId);
+      StickyNotes.saveNotes(areaId, filteredNotes);
+      
+      // 触发事件
+      eventManager.emit('stickyNotes:noteDeleted', noteId, areaId);
+    });
   },
   
   /**
@@ -511,16 +576,26 @@ export const StickyNotes = {
    * @param {Object} updates - 更新内容
    */
   updateNote: (noteId, areaId, updates) => {
-    const notes = StickyNotes.getNotes(areaId);
-    const noteIndex = notes.findIndex(note => note.id === noteId);
-    
-    if (noteIndex !== -1) {
-      notes[noteIndex] = { ...notes[noteIndex], ...updates };
-      StickyNotes.saveNotes(areaId, notes);
-      return true;
-    }
-    
-    return false;
+    return ErrorUtils.safeExecute(() => {
+      const notes = StickyNotes.getNotes(areaId);
+      const noteIndex = notes.findIndex(note => note.id === noteId);
+      
+      if (noteIndex !== -1) {
+        notes[noteIndex] = {
+          ...notes[noteIndex], 
+          ...updates,
+          updatedAt: new Date().toISOString()
+        };
+        StickyNotes.saveNotes(areaId, notes);
+        
+        // 触发事件
+        eventManager.emit('stickyNotes:noteUpdated', notes[noteIndex], areaId);
+        
+        return true;
+      }
+      
+      return false;
+    }, false);
   },
   
   /**
@@ -528,30 +603,26 @@ export const StickyNotes = {
    * @param {string} areaId - 区域ID
    */
   exportNotes: (areaId) => {
-    const notes = StickyNotes.getNotes(areaId);
-    
-    if (notes.length === 0) return false;
-    
-    let content = `便利贴导出 - 区域: ${areaId}\n`;
-    content += '=====================\n\n';
-    
-    notes.forEach((note, index) => {
-      content += `【便利贴 ${index + 1}】\n`;
-      content += `内容: ${note.content}\n`;
-      content += `创建时间: ${new Date(note.createdAt).toLocaleString()}\n\n`;
-    });
-    
-    // 创建下载链接
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `便利贴_${areaId}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    return true;
+    return ErrorUtils.safeExecute(() => {
+      const notes = StickyNotes.getNotes(areaId);
+      
+      if (notes.length === 0) return false;
+      
+      let content = `便利贴导出 - 区域: ${areaId}\n`;
+      content += '=====================\n\n';
+      
+      notes.forEach((note, index) => {
+        content += `【便利贴 ${index + 1}】\n`;
+        content += `内容: ${note.content}\n`;
+        content += `创建时间: ${new Date(note.createdAt).toLocaleString()}\n\n`;
+      });
+      
+      downloadTextFile(content, `便利贴_${areaId}.txt`);
+      
+      // 触发事件
+      eventManager.emit('stickyNotes:notesExported', areaId);
+      
+      return true;
+    }, false);
   }
 };

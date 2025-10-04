@@ -2,6 +2,7 @@
 
 import { saveFormData, loadFormData, downloadTextFile } from '../utils/dataManager.js';
 import { $ } from '../utils/dom.js';
+import { eventManager, ErrorUtils } from '../utils/advancedUtils.js';
 
 /**
  * 财务预测功能
@@ -11,19 +12,27 @@ export const FinancialPlanning = {
    * 保存财务预测数据
    */
   saveData: () => {
-    const sections = [
-      'revenue', 'costOfGoodsSold', 'grossProfit', 'operatingExpenses', 
-      'netIncome', 'cashFlow', 'balanceSheet'
-    ];
-    
-    return saveFormData('financialPlanningData', sections, 'finance-');
+    return ErrorUtils.safeExecute(() => {
+      const sections = [
+        'revenue', 'costOfGoodsSold', 'grossProfit', 'operatingExpenses', 
+        'netIncome', 'cashFlow', 'balanceSheet'
+      ];
+      
+      const result = saveFormData('financialPlanningData', sections, 'finance-');
+      eventManager.emit('financialDataSaved', result);
+      return result;
+    }, '保存财务预测数据失败');
   },
   
   /**
    * 从本地存储加载财务预测数据
    */
   loadData: () => {
-    return loadFormData('financialPlanningData', 'finance-');
+    return ErrorUtils.safeExecute(() => {
+      const result = loadFormData('financialPlanningData', 'finance-');
+      eventManager.emit('financialDataLoaded', result);
+      return result;
+    }, '加载财务预测数据失败');
   },
   
   /**
@@ -85,89 +94,83 @@ export const FinancialPlanning = {
    * 生成财务预测报告
    */
   generateReport: () => {
-    const sections = {
-      revenue: '收入预测',
-      costOfGoodsSold: '产品成本',
-      grossProfit: '毛利润',
-      operatingExpenses: '运营费用',
-      netIncome: '净利润',
-      cashFlow: '现金流预测',
-      balanceSheet: '资产负债表'
-    };
-    
-    let reportContent = '财务规划报告\n';
-    reportContent += '=============\n\n';
-    
-    // 收集基本财务数据
-    const revenue = parseFloat(document.getElementById('finance-revenue')?.value || 0);
-    const costOfGoodsSold = parseFloat(document.getElementById('finance-costOfGoodsSold')?.value || 0);
-    const operatingExpenses = parseFloat(document.getElementById('finance-operatingExpenses')?.value || 0);
-    
-    // 计算财务指标
-    const metricsResult = FinancialPlanning.calculateFinancialMetrics({
-      revenue,
-      costOfGoodsSold,
-      operatingExpenses
-    });
-    
-    // 添加财务指标部分
-    if (metricsResult.success) {
-      reportContent += '【关键财务指标】\n';
-      reportContent += '-----------------\n';
-      reportContent += `收入: ${revenue.toLocaleString()} 元\n`;
-      reportContent += `产品成本: ${costOfGoodsSold.toLocaleString()} 元\n`;
-      reportContent += `毛利润: ${metricsResult.data.grossProfit.toLocaleString()} 元 (毛利率: ${metricsResult.data.grossMargin}%)\n`;
-      reportContent += `运营费用: ${operatingExpenses.toLocaleString()} 元\n`;
-      reportContent += `营业利润: ${metricsResult.data.operatingIncome.toLocaleString()} 元 (营业利润率: ${metricsResult.data.operatingMargin}%)\n`;
-      reportContent += `净利润: ${metricsResult.data.netIncome.toLocaleString()} 元 (净利率: ${metricsResult.data.netMargin}%)\n`;
-      reportContent += `盈亏平衡点: ${metricsResult.data.breakEvenPoint.toLocaleString()} 元\n\n`;
-    }
-    
-    // 添加详细财务规划部分
-    reportContent += '【详细财务规划】\n';
-    reportContent += '-----------------\n';
-    
-    Object.entries(sections).forEach(([key, label]) => {
-      const element = document.getElementById(`finance-${key}`);
-      const content = element ? element.value.trim() : '';
+    return ErrorUtils.safeExecute(() => {
+      const sections = {
+        revenue: '收入预测',
+        costOfGoodsSold: '产品成本',
+        grossProfit: '毛利润',
+        operatingExpenses: '运营费用',
+        netIncome: '净利润',
+        cashFlow: '现金流预测',
+        balanceSheet: '资产负债表'
+      };
       
-      if (content) {
-        reportContent += `【${label}】\n`;
-        reportContent += content + '\n\n';
+      let reportContent = '财务规划报告\n';
+      reportContent += '=============\n\n';
+      
+      // 收集基本财务数据
+      const revenue = parseFloat($('finance-revenue')?.value || 0);
+      const costOfGoodsSold = parseFloat($('finance-costOfGoodsSold')?.value || 0);
+      const operatingExpenses = parseFloat($('finance-operatingExpenses')?.value || 0);
+      
+      // 计算财务指标
+      const metricsResult = FinancialPlanning.calculateFinancialMetrics({
+        revenue,
+        costOfGoodsSold,
+        operatingExpenses
+      });
+      
+      // 添加财务指标部分
+      if (metricsResult.success) {
+        reportContent += '【关键财务指标】\n';
+        reportContent += '-----------------\n';
+        reportContent += `收入: ${revenue.toLocaleString()} 元\n`;
+        reportContent += `产品成本: ${costOfGoodsSold.toLocaleString()} 元\n`;
+        reportContent += `毛利润: ${metricsResult.data.grossProfit.toLocaleString()} 元 (毛利率: ${metricsResult.data.grossMargin}%)\n`;
+        reportContent += `运营费用: ${operatingExpenses.toLocaleString()} 元\n`;
+        reportContent += `营业利润: ${metricsResult.data.operatingIncome.toLocaleString()} 元 (营业利润率: ${metricsResult.data.operatingMargin}%)\n`;
+        reportContent += `净利润: ${metricsResult.data.netIncome.toLocaleString()} 元 (净利率: ${metricsResult.data.netMargin}%)\n`;
+        reportContent += `盈亏平衡点: ${metricsResult.data.breakEvenPoint.toLocaleString()} 元\n\n`;
       }
-    });
-    
-    // 生成日期
-    reportContent += `报告生成日期: ${new Date().toLocaleString()}\n`;
-    
-    return {
-      success: true,
-      content: reportContent
-    };
+      
+      // 添加详细财务规划部分
+      reportContent += '【详细财务规划】\n';
+      reportContent += '-----------------\n';
+      
+      Object.entries(sections).forEach(([key, label]) => {
+        const element = $(`finance-${key}`);
+        const content = element ? element.value.trim() : '';
+        
+        if (content) {
+          reportContent += `【${label}】\n`;
+          reportContent += content + '\n\n';
+        }
+      });
+      
+      // 生成日期
+      reportContent += `报告生成日期: ${new Date().toLocaleString()}\n`;
+      
+      eventManager.emit('financialReportGenerated', { success: true, content: reportContent });
+      return { success: true, content: reportContent };
+    }, '生成财务规划报告失败');
   },
   
   /**
    * 导出财务规划报告
    */
   exportReport: () => {
-    const report = FinancialPlanning.generateReport();
-    
-    if (!report.success) {
-      return report;
-    }
-    
-    // 创建下载链接
-    const blob = new Blob([report.content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '财务规划报告.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    return report;
+    return ErrorUtils.safeExecute(() => {
+      const report = FinancialPlanning.generateReport();
+      
+      if (!report.success) {
+        return report;
+      }
+      
+      // 使用downloadTextFile工具函数
+      const result = downloadTextFile(report.content, '财务规划报告.txt');
+      eventManager.emit('financialReportExported', result);
+      return result;
+    }, '导出财务规划报告失败');
   },
   
   /**
@@ -190,37 +193,47 @@ export const FinancialPlanning = {
    * 应用财务预测模板
    */
   applyTemplate: () => {
-    const template = FinancialPlanning.generateTemplate();
-    
-    Object.entries(template).forEach(([key, value]) => {
-      const element = document.getElementById(`finance-${key}`);
-      if (element) {
-        element.value = value;
-      }
-    });
-    
-    // 保存模板数据
-    FinancialPlanning.saveData();
+    return ErrorUtils.safeExecute(() => {
+      const template = FinancialPlanning.generateTemplate();
+      
+      Object.entries(template).forEach(([key, value]) => {
+        const element = $(`finance-${key}`);
+        if (element) {
+          element.value = value;
+        }
+      });
+      
+      // 保存模板数据
+      const result = FinancialPlanning.saveData();
+      eventManager.emit('financialTemplateApplied', result);
+      return result;
+    }, '应用财务预测模板失败');
   },
   
   /**
    * 清空财务预测数据
    */
   clearData: () => {
-    const sections = [
-      'revenue', 'costOfGoodsSold', 'grossProfit', 'operatingExpenses', 
-      'netIncome', 'cashFlow', 'balanceSheet'
-    ];
-    
-    sections.forEach(section => {
-      const element = document.getElementById(`finance-${section}`);
-      if (element) {
-        element.value = '';
-      }
-    });
-    
-    // 清除本地存储
-    localStorage.removeItem('financialPlanningData');
+    return ErrorUtils.safeExecute(() => {
+      const sections = [
+        'revenue', 'costOfGoodsSold', 'grossProfit', 'operatingExpenses', 
+        'netIncome', 'cashFlow', 'balanceSheet'
+      ];
+      
+      sections.forEach(section => {
+        const element = $(`finance-${section}`);
+        if (element) {
+          element.value = '';
+        }
+      });
+      
+      // 清除本地存储
+      localStorage.removeItem('financialPlanningData');
+      
+      const result = { success: true, message: '财务数据已清空' };
+      eventManager.emit('financialDataCleared', result);
+      return result;
+    }, '清空财务预测数据失败');
   },
   
   /**
@@ -228,70 +241,75 @@ export const FinancialPlanning = {
    * @returns {Object} 分析结果
    */
   analyzeFinancialHealth: () => {
-    const revenue = parseFloat(document.getElementById('finance-revenue')?.value || 0);
-    const costOfGoodsSold = parseFloat(document.getElementById('finance-costOfGoodsSold')?.value || 0);
-    const operatingExpenses = parseFloat(document.getElementById('finance-operatingExpenses')?.value || 0);
-    
-    // 计算财务指标
-    const metricsResult = FinancialPlanning.calculateFinancialMetrics({
-      revenue,
-      costOfGoodsSold,
-      operatingExpenses
-    });
-    
-    if (!metricsResult.success) {
-      return metricsResult;
-    }
-    
-    const { grossMargin, netMargin, operatingMargin } = metricsResult.data;
-    
-    // 评估财务健康状况
-    let healthAssessment = '';
-    let recommendations = [];
-    
-    // 评估毛利率
-    if (grossMargin >= 50) {
-      healthAssessment += '毛利率良好 (≥50%)，表明产品/服务具有较强的盈利能力。\n';
-    } else if (grossMargin >= 30) {
-      healthAssessment += '毛利率一般 (30%-49%)，仍有提升空间。\n';
-    } else {
-      healthAssessment += '毛利率较低 (<30%)，需要关注成本控制或定价策略。\n';
-      recommendations.push('审视并优化产品成本结构');
-      recommendations.push('评估定价策略是否合理');
-    }
-    
-    // 评估净利率
-    if (netMargin >= 15) {
-      healthAssessment += '净利率良好 (≥15%)，整体盈利能力较强。\n';
-    } else if (netMargin >= 5) {
-      healthAssessment += '净利率一般 (5%-14%)，需要控制运营成本。\n';
-    } else if (netMargin >= 0) {
-      healthAssessment += '净利率较低 (0%-4%)，盈利能力较弱。\n';
-      recommendations.push('严格控制运营费用');
-      recommendations.push('寻找提高收入的途径');
-    } else {
-      healthAssessment += '处于亏损状态，需要立即采取措施改善财务状况。\n';
-      recommendations.push('紧急评估并减少所有非必要支出');
-      recommendations.push('考虑短期融资或收入增长策略');
-      recommendations.push('重新审视商业模式的可行性');
-    }
-    
-    // 评估运营利润率
-    if (operatingMargin >= 10) {
-      healthAssessment += '运营利润率良好 (≥10%)，核心业务运营效率较高。\n';
-    } else if (operatingMargin >= 0) {
-      healthAssessment += '运营利润率一般 (0%-9%)，需要提高运营效率。\n';
-      recommendations.push('优化内部流程，提高运营效率');
-    } else {
-      healthAssessment += '运营亏损，核心业务模式可能存在问题。\n';
-      recommendations.push('重新评估核心业务模式');
-      recommendations.push('考虑业务转型或收缩策略');
-    }
-    
-    return {
-      success: true,
-      assessment: healthAssessment,
-      recommendations: recommendations.filter((item, index) => recommendations.indexOf(item) === index) // 去重
-    };
+    return ErrorUtils.safeExecute(() => {
+      const revenue = parseFloat($('finance-revenue')?.value || 0);
+      const costOfGoodsSold = parseFloat($('finance-costOfGoodsSold')?.value || 0);
+      const operatingExpenses = parseFloat($('finance-operatingExpenses')?.value || 0);
+      
+      // 计算财务指标
+      const metricsResult = FinancialPlanning.calculateFinancialMetrics({
+        revenue,
+        costOfGoodsSold,
+        operatingExpenses
+      });
+      
+      if (!metricsResult.success) {
+        return metricsResult;
+      }
+      
+      const { grossMargin, netMargin, operatingMargin } = metricsResult.data;
+      
+      // 评估财务健康状况
+      let healthAssessment = '';
+      let recommendations = [];
+      
+      // 评估毛利率
+      if (grossMargin >= 50) {
+        healthAssessment += '毛利率良好 (≥50%)，表明产品/服务具有较强的盈利能力。\n';
+      } else if (grossMargin >= 30) {
+        healthAssessment += '毛利率一般 (30%-49%)，仍有提升空间。\n';
+      } else {
+        healthAssessment += '毛利率较低 (<30%)，需要关注成本控制或定价策略。\n';
+        recommendations.push('审视并优化产品成本结构');
+        recommendations.push('评估定价策略是否合理');
+      }
+      
+      // 评估净利率
+      if (netMargin >= 15) {
+        healthAssessment += '净利率良好 (≥15%)，整体盈利能力较强。\n';
+      } else if (netMargin >= 5) {
+        healthAssessment += '净利率一般 (5%-14%)，需要控制运营成本。\n';
+      } else if (netMargin >= 0) {
+        healthAssessment += '净利率较低 (0%-4%)，盈利能力较弱。\n';
+        recommendations.push('严格控制运营费用');
+        recommendations.push('寻找提高收入的途径');
+      } else {
+        healthAssessment += '处于亏损状态，需要立即采取措施改善财务状况。\n';
+        recommendations.push('紧急评估并减少所有非必要支出');
+        recommendations.push('考虑短期融资或收入增长策略');
+        recommendations.push('重新审视商业模式的可行性');
+      }
+      
+      // 评估运营利润率
+      if (operatingMargin >= 10) {
+        healthAssessment += '运营利润率良好 (≥10%)，核心业务运营效率较高。\n';
+      } else if (operatingMargin >= 0) {
+        healthAssessment += '运营利润率一般 (0%-9%)，需要提高运营效率。\n';
+        recommendations.push('优化内部流程，提高运营效率');
+      } else {
+        healthAssessment += '运营亏损，核心业务模式可能存在问题。\n';
+        recommendations.push('重新评估核心业务模式');
+        recommendations.push('考虑业务转型或收缩策略');
+      }
+      
+      const result = {
+        success: true,
+        assessment: healthAssessment,
+        recommendations: recommendations.filter((item, index) => recommendations.indexOf(item) === index) // 去重
+      };
+      
+      eventManager.emit('financialHealthAnalyzed', result);
+      return result;
+    }, '分析财务健康状况失败');
   }
 };

@@ -10,6 +10,7 @@ import { MarketAnalysis, CompetitiveAnalysis } from './modules/market.js';
 import { BusinessModelCanvas, ValuePropositionCanvas, LeanCanvas, BusinessModelEvaluation, StickyNotes } from './modules/business.js';
 import { BusinessPlan } from './modules/businessPlan.js';
 import { FinancialPlanning } from './modules/finance.js';
+import { RFMModel } from './modules/rfm.js';
 
 /**
  * 应用主类
@@ -146,6 +147,9 @@ export class BusinessAnalysisApp {
     
     // 便利贴功能
     this.initStickyNotes();
+    
+    // RFM模型
+    this.initRFMModel();
   }
   
   /**
@@ -566,6 +570,81 @@ export class BusinessAnalysisApp {
   }
   
   /**
+   * 初始化RFM模型
+   */
+  initRFMModel() {
+    const saveBtn = document.getElementById('save-rfm');
+    const exportBtn = document.getElementById('export-rfm');
+    const clearBtn = document.getElementById('clear-rfm');
+    const resetCriteriaBtn = document.getElementById('reset-rfm-criteria');
+    const calculateBtn = document.getElementById('calculate-rfm');
+    
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        RFMModel.saveData();
+        showMessage('RFM模型数据已保存', 'success');
+      });
+    }
+    
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        RFMModel.exportReport();
+      });
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        RFMModel.clearData();
+        showMessage('RFM模型数据已清除', 'info');
+      });
+    }
+    
+    if (resetCriteriaBtn) {
+      resetCriteriaBtn.addEventListener('click', () => {
+        RFMModel.resetCriteria();
+        showMessage('RFM评分标准已重置为默认值', 'info');
+      });
+    }
+    
+    if (calculateBtn) {
+      calculateBtn.addEventListener('click', () => {
+        // 这里可以根据实际情况获取客户数据并进行计算
+        const customerData = {
+          // 这里使用示例数据，实际应用中应从表单获取
+          recencyScore: 4,
+          frequencyScore: 5,
+          monetaryScore: 5
+        };
+        
+        const result = RFMModel.calculateRFMScores(customerData);
+        if (result) {
+          // 显示计算结果
+          showModal('RFM计算结果', 
+            `<div style="text-align: left;">\n` +
+            `<p><strong>RFM得分:</strong> ${result.recencyScore}-${result.frequencyScore}-${result.monetaryScore}</p>\n` +
+            `<p><strong>加权总分:</strong> ${result.weightedScore}</p>\n` +
+            `<p><strong>客户细分:</strong> ${result.segment}</p>\n` +
+            `<p><strong>细分描述:</strong> ${result.segmentDescription}</p>\n` +
+            `</div>`
+          );
+        } else {
+          showMessage('计算失败，请检查输入数据', 'error');
+        }
+      });
+    }
+    
+    // 设置自动保存
+    const rfmElements = document.querySelectorAll('[id^="rfm-"]');
+    rfmElements.forEach(element => {
+      if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+        element.addEventListener('input', this.debounce(() => {
+          RFMModel.saveData();
+        }, 2000));
+      }
+    });
+  }
+  
+  /**
    * 设置全局事件监听
    */
   setupEventListeners() {
@@ -640,6 +719,9 @@ export class BusinessAnalysisApp {
     // 加载商业模式评估数据
     BusinessModelEvaluation.loadEvaluationData();
     
+    // 加载RFM模型数据
+    RFMModel.loadData();
+    
     // 加载便利贴
     this.loadStickyNotes();
   }
@@ -682,6 +764,9 @@ export class BusinessAnalysisApp {
       case 'business-model-evaluation':
         BusinessModelEvaluation.saveEvaluationData();
         break;
+      case 'rfm-analysis':
+        RFMModel.saveData();
+        break;
     }
     
     showMessage('数据已保存', 'success');
@@ -722,6 +807,9 @@ export class BusinessAnalysisApp {
         break;
       case 'business-model-evaluation':
         BusinessModelEvaluation.exportReport();
+        break;
+      case 'rfm-analysis':
+        RFMModel.exportReport();
         break;
     }
   }

@@ -26,6 +26,7 @@
                 <li><a href="#competitive-analysis" class="nav-link">竞争分析</a></li>
                 <li><a href="#financial-planning" class="nav-link">财务规划</a></li>
                 <li><a href="#business-plan" class="nav-link">商业计划书</a></li>
+                <li><a href="#rfm-analysis" class="nav-link">RFM模型分析</a></li>
             </ul>
         </nav>
 
@@ -96,6 +97,134 @@
                             <div class="section-description">来自每个客户细分的现金收入</div>
                             <div class="notes-container"></div>
                         </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- RFM模型分析页面 -->
+            <section id="rfm-analysis" class="page">
+                <header class="page-header">
+                    <h1>RFM模型分析</h1>
+                    <p class="page-description">基于最近购买时间(Recency)、购买频率(Frequency)和消费金额(Monetary)的客户细分分析工具</p>
+                    <div class="page-controls">
+                        <button id="save-rfm" class="btn">💾 保存数据</button>
+                        <button id="export-rfm" class="btn">📄 导出报告</button>
+                        <button id="clear-rfm" class="btn">🗑️ 清空数据</button>
+                        <button id="reset-rfm-criteria" class="btn">🔄 重置评分标准</button>
+                        <button id="calculate-rfm" class="btn">📊 计算RFM得分</button>
+                    </div>
+                </header>
+                
+                <div class="rfm-container">
+                    <div class="rfm-basic-info">
+                        <h2>基本信息</h2>
+                        <div class="form-group">
+                            <label for="rfm-customerCount">客户总数:</label>
+                            <input type="number" id="rfm-customerCount" min="0" placeholder="输入客户总数">
+                        </div>
+                        
+                        <h2>权重设置</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="rfm-recencyWeight">最近购买权重:</label>
+                                <input type="number" id="rfm-recencyWeight" min="1" max="10" step="0.1" value="1" placeholder="设置R权重">
+                            </div>
+                            <div class="form-group">
+                                <label for="rfm-frequencyWeight">购买频率权重:</label>
+                                <input type="number" id="rfm-frequencyWeight" min="1" max="10" step="0.1" value="1" placeholder="设置F权重">
+                            </div>
+                            <div class="form-group">
+                                <label for="rfm-monetaryWeight">消费金额权重:</label>
+                                <input type="number" id="rfm-monetaryWeight" min="1" max="10" step="0.1" value="1" placeholder="设置M权重">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="rfm-criteria">
+                        <h2>RFM评分标准</h2>
+                        
+                        <div class="criteria-group">
+                            <h3>最近购买时间(Recency)</h3>
+                            <div class="criteria-grid">
+                                <div class="criteria-item">
+                                    <label for="rfm-recency-score5">5分:</label>
+                                    <input type="text" id="rfm-recency-score5" placeholder="例如: 30天内">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-recency-score4">4分:</label>
+                                    <input type="text" id="rfm-recency-score4" placeholder="例如: 31-60天">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-recency-score3">3分:</label>
+                                    <input type="text" id="rfm-recency-score3" placeholder="例如: 61-90天">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-recency-score2">2分:</label>
+                                    <input type="text" id="rfm-recency-score2" placeholder="例如: 91-180天">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-recency-score1">1分:</label>
+                                    <input type="text" id="rfm-recency-score1" placeholder="例如: 180天以上">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="criteria-group">
+                            <h3>购买频率(Frequency)</h3>
+                            <div class="criteria-grid">
+                                <div class="criteria-item">
+                                    <label for="rfm-frequency-score5">5分:</label>
+                                    <input type="text" id="rfm-frequency-score5" placeholder="例如: 10次以上">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-frequency-score4">4分:</label>
+                                    <input type="text" id="rfm-frequency-score4" placeholder="例如: 5-9次">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-frequency-score3">3分:</label>
+                                    <input type="text" id="rfm-frequency-score3" placeholder="例如: 3-4次">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-frequency-score2">2分:</label>
+                                    <input type="text" id="rfm-frequency-score2" placeholder="例如: 2次">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-frequency-score1">1分:</label>
+                                    <input type="text" id="rfm-frequency-score1" placeholder="例如: 1次">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="criteria-group">
+                            <h3>消费金额(Monetary)</h3>
+                            <div class="criteria-grid">
+                                <div class="criteria-item">
+                                    <label for="rfm-monetary-score5">5分:</label>
+                                    <input type="text" id="rfm-monetary-score5" placeholder="例如: 10000元以上">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-monetary-score4">4分:</label>
+                                    <input type="text" id="rfm-monetary-score4" placeholder="例如: 5000-9999元">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-monetary-score3">3分:</label>
+                                    <input type="text" id="rfm-monetary-score3" placeholder="例如: 2000-4999元">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-monetary-score2">2分:</label>
+                                    <input type="text" id="rfm-monetary-score2" placeholder="例如: 500-1999元">
+                                </div>
+                                <div class="criteria-item">
+                                    <label for="rfm-monetary-score1">1分:</label>
+                                    <input type="text" id="rfm-monetary-score1" placeholder="例如: 500元以下">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="rfm-analysis-notes">
+                        <h2>分析备注</h2>
+                        <textarea id="rfm-analysisNotes" rows="6" placeholder="输入分析过程中的观察和思考..."></textarea>
                     </div>
                 </div>
             </section>

@@ -17,7 +17,7 @@
             <ul class="sidebar-menu">
                 <li><a href="#business-model-canvas" class="nav-link active">商业模式画布</a></li>
                 <li><a href="#swot-analysis" class="nav-link">SWOT分析</a></li>
-                <li><a href="#value-proposition" class="nav-link">价值主张画布</a></li>
+                <li><a href="#value-proposition-canvas" class="nav-link">价值主张画布</a></li>
                 <li><a href="#lean-canvas" class="nav-link">精益画布</a></li>
                 <li><a href="#business-assessment" class="nav-link">商业模式评估</a></li>
                 <li><a href="#strategy-framework" class="nav-link">战略框架</a></li>
@@ -265,13 +265,13 @@
             </section>
 
             <!-- 价值主张画布页面 -->
-            <section id="value-proposition" class="page">
+            <section id="value-proposition-canvas" class="page">
                 <header class="page-header">
                     <h1>价值主张画布</h1>
                     <p class="page-description">设计客户真正想要的产品和服务</p>
                     <div class="page-controls">
-                        <button class="btn" onclick="editValueProposition()">📝 编辑画布</button>
-                        <button class="btn" onclick="exportValueProposition()">📄 导出画布</button>
+                        <button id="save-vp-canvas" class="btn">💾 保存画布</button>
+                        <button id="export-vp-canvas" class="btn">📄 导出画布</button>
                     </div>
                 </header>
                 <div class="value-proposition-canvas">
@@ -318,46 +318,46 @@
                     <h1>精益画布</h1>
                     <p class="page-description">专注于问题和解决方案的单页商业计划</p>
                     <div class="page-controls">
-                        <button class="btn" onclick="editLeanCanvas()">📝 编辑画布</button>
-                        <button class="btn" onclick="exportLeanCanvas()">📄 导出画布</button>
+                        <button id="save-lean-canvas" class="btn">💾 保存画布</button>
+                        <button id="export-lean-canvas" class="btn">📄 导出画布</button>
                     </div>
                 </header>
                 <div class="lean-canvas-grid">
-                    <div class="lean-section" onclick="editLeanSection('problem')">
+                    <div class="lean-section">
                         <h4>问题</h4>
-                        <div class="section-content" id="problem">客户面临的1-3个主要问题</div>
+                        <div class="section-content" id="lean-problem">客户面临的1-3个主要问题</div>
                     </div>
-                    <div class="lean-section" onclick="editLeanSection('solution')">
+                    <div class="lean-section">
                         <h4>解决方案</h4>
-                        <div class="section-content" id="solution">您的解决方案概述</div>
+                        <div class="section-content" id="lean-solution">您的解决方案概述</div>
                     </div>
-                    <div class="lean-section" onclick="editLeanSection('key-metrics')">
+                    <div class="lean-section">
                         <h4>关键指标</h4>
-                        <div class="section-content" id="key-metrics">您衡量的关键活动</div>
+                        <div class="section-content" id="lean-key-metrics">您衡量的关键活动</div>
                     </div>
-                    <div class="lean-section" onclick="editLeanSection('unique-value')">
+                    <div class="lean-section">
                         <h4>独特价值主张</h4>
-                        <div class="section-content" id="unique-value">单一、清晰、有吸引力的信息</div>
+                        <div class="section-content" id="lean-unique-value">单一、清晰、有吸引力的信息</div>
                     </div>
-                    <div class="lean-section" onclick="editLeanSection('unfair-advantage')">
+                    <div class="lean-section">
                         <h4>不公平优势</h4>
-                        <div class="section-content" id="unfair-advantage">无法轻易复制或购买</div>
+                        <div class="section-content" id="lean-unfair-advantage">无法轻易复制或购买</div>
                     </div>
-                    <div class="lean-section" onclick="editLeanSection('channels')">
+                    <div class="lean-section">
                         <h4>渠道</h4>
-                        <div class="section-content" id="channels">通往客户的路径</div>
+                        <div class="section-content" id="lean-channels">通往客户的路径</div>
                     </div>
-                    <div class="lean-section" onclick="editLeanSection('customer-segments')">
+                    <div class="lean-section">
                         <h4>客户细分</h4>
-                        <div class="section-content" id="customer-segments">目标客户</div>
+                        <div class="section-content" id="lean-customer-segments">目标客户</div>
                     </div>
-                    <div class="lean-section" onclick="editLeanSection('cost-structure')">
+                    <div class="lean-section">
                         <h4>成本结构</h4>
-                        <div class="section-content" id="cost-structure">客户获取成本、分销成本等</div>
+                        <div class="section-content" id="lean-cost-structure">客户获取成本、分销成本等</div>
                     </div>
-                    <div class="lean-section" onclick="editLeanSection('revenue-streams')">
+                    <div class="lean-section">
                         <h4>收入来源</h4>
-                        <div class="section-content" id="revenue-streams">收入模式、生命周期价值、收入等</div>
+                        <div class="section-content" id="lean-revenue-streams">收入模式、生命周期价值、收入等</div>
                     </div>
                 </div>
             </section>
@@ -417,59 +417,90 @@
                     <p class="page-description">经典的战略框架用于商业分析</p>
                 </header>
                 <div class="strategy-framework">
-                    <div class="strategy-grid">
-                        <div class="strategy-card">
-                            <h3>波特五力模型</h3>
-                            <p>分析行业竞争环境</p>
-                            <div class="strategy-guide">
-                                <h4>如何使用:</h4>
-                                <ol>
-                                    <li>识别供应商及其议价能力</li>
-                                    <li>分析买方议价能力</li>
-                                    <li>评估新进入者威胁</li>
-                                    <li>评估替代品威胁</li>
-                                    <li>分析竞争激烈程度</li>
-                                </ol>
+                    <!-- 波特五力模型分析表单 -->
+                    <div class="framework-section">
+                        <h3>波特五力模型</h3>
+                        <p>分析行业竞争环境，帮助您了解市场结构和竞争格局</p>
+                        <div class="framework-form">
+                            <div class="form-group">
+                                <label for="porter-rivalry">现有竞争者的竞争程度</label>
+                                <textarea id="porter-rivalry" rows="4" placeholder="描述行业内现有企业之间的竞争状况..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="porter-suppliers">供应商的议价能力</label>
+                                <textarea id="porter-suppliers" rows="4" placeholder="描述供应商对企业的影响程度..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="porter-buyers">购买者的议价能力</label>
+                                <textarea id="porter-buyers" rows="4" placeholder="描述购买者对企业的影响程度..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="porter-threatOfNewEntrants">潜在竞争者进入的能力</label>
+                                <textarea id="porter-threatOfNewEntrants" rows="4" placeholder="描述新企业进入行业的难易程度..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="porter-threatOfSubstitutes">替代品的替代能力</label>
+                                <textarea id="porter-threatOfSubstitutes" rows="4" placeholder="描述替代产品对行业的影响程度..."></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button id="save-porter" class="btn">💾 保存分析</button>
+                                <button id="export-porter" class="btn">📄 导出报告</button>
                             </div>
                         </div>
-                        <div class="strategy-card">
-                            <h3>SWOT分析</h3>
-                            <p>分析优势、劣势、机会、威胁的战略规划技术</p>
-                            <div class="strategy-guide">
-                                <h4>如何使用:</h4>
-                                <ol>
-                                    <li>列出内部优势</li>
-                                    <li>识别内部劣势</li>
-                                    <li>寻找外部机会</li>
-                                    <li>识别外部威胁</li>
-                                    <li>基于分析制定策略</li>
-                                </ol>
+                    </div>
+                    
+                    <!-- PEST分析表单 -->
+                    <div class="framework-section">
+                        <h3>PEST分析</h3>
+                        <p>宏观环境分析框架，帮助您了解影响业务的外部因素</p>
+                        <div class="framework-form">
+                            <div class="form-group">
+                                <label for="pest-political">政治因素（Political）</label>
+                                <textarea id="pest-political" rows="4" placeholder="描述政治环境对企业的影响..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pest-economic">经济因素（Economic）</label>
+                                <textarea id="pest-economic" rows="4" placeholder="描述经济环境对企业的影响..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pest-social">社会因素（Social）</label>
+                                <textarea id="pest-social" rows="4" placeholder="描述社会文化环境对企业的影响..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="pest-technological">技术因素（Technological）</label>
+                                <textarea id="pest-technological" rows="4" placeholder="描述技术发展对企业的影响..."></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button id="save-pest" class="btn">💾 保存分析</button>
+                                <button id="export-pest" class="btn">📄 导出报告</button>
                             </div>
                         </div>
-                        <div class="strategy-card">
-                            <h3>PEST分析</h3>
-                            <p>宏观环境分析框架</p>
-                            <div class="strategy-guide">
-                                <h4>如何使用:</h4>
-                                <ol>
-                                    <li>分析政治因素</li>
-                                    <li>评估经济因素</li>
-                                    <li>评估社会因素</li>
-                                    <li>审查技术因素</li>
-                                </ol>
+                    </div>
+                    
+                    <!-- BCG矩阵分析表单 -->
+                    <div class="framework-section">
+                        <h3>BCG矩阵</h3>
+                        <p>产品组合分析工具，帮助您评估业务组合的战略位置</p>
+                        <div class="framework-form">
+                            <div class="form-group">
+                                <label for="bcg-stars">明星业务（高增长、高市场份额）</label>
+                                <textarea id="bcg-stars" rows="3" placeholder="列出您的明星业务..."></textarea>
                             </div>
-                        </div>
-                        <div class="strategy-card">
-                            <h3>BCG矩阵</h3>
-                            <p>产品组合分析工具</p>
-                            <div class="strategy-guide">
-                                <h4>如何使用:</h4>
-                                <ol>
-                                    <li>识别明星产品（高增长、高份额）</li>
-                                    <li>找到现金牛产品（低增长、高份额）</li>
-                                    <li>识别问题产品（高增长、低份额）</li>
-                                    <li>识别瘦狗产品（低增长、低份额）</li>
-                                </ol>
+                            <div class="form-group">
+                                <label for="bcg-cashCows">现金牛业务（低增长、高市场份额）</label>
+                                <textarea id="bcg-cashCows" rows="3" placeholder="列出您的现金牛业务..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="bcg-questionMarks">问题业务（高增长、低市场份额）</label>
+                                <textarea id="bcg-questionMarks" rows="3" placeholder="列出您的问题业务..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="bcg-dogs">瘦狗业务（低增长、低市场份额）</label>
+                                <textarea id="bcg-dogs" rows="3" placeholder="列出您的瘦狗业务..."></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button id="save-bcg" class="btn">💾 保存分析</button>
+                                <button id="export-bcg" class="btn">📄 导出报告</button>
                             </div>
                         </div>
                     </div>

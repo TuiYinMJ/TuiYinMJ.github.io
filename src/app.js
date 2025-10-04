@@ -55,7 +55,9 @@ export class BusinessAnalysisApp {
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
-        const pageId = link.getAttribute('data-page');
+        // 从href属性中提取页面ID（去掉#前缀）
+        const href = link.getAttribute('href');
+        const pageId = href.substring(1); // 移除#符号
         this.navigateTo(pageId);
       });
     });
@@ -92,7 +94,10 @@ export class BusinessAnalysisApp {
       const navLinks = document.querySelectorAll('.nav-link');
       navLinks.forEach(link => {
         link.classList.remove('active');
-        if (link.getAttribute('data-page') === pageId) {
+        // 检查链接的href属性是否匹配当前页面ID（去掉#前缀）
+        const href = link.getAttribute('href');
+        const linkPageId = href.substring(1); // 移除#符号
+        if (linkPageId === pageId) {
           link.classList.add('active');
         }
       });
@@ -226,8 +231,8 @@ export class BusinessAnalysisApp {
       });
     }
     
-    // 设置自动保存
-    const vpElements = document.querySelectorAll('[id^="vp-"]');
+    // 设置自动保存 - 选择所有价值主张画布相关的元素
+    const vpElements = document.querySelectorAll('#customer-jobs, #pains, #gains, #products-services, #pain-relievers, #gain-creators');
     vpElements.forEach(element => {
       element.addEventListener('input', this.debounce(() => {
         ValuePropositionCanvas.saveData();
@@ -254,6 +259,91 @@ export class BusinessAnalysisApp {
         LeanCanvas.exportReport();
       });
     }
+    
+    // 为每个精益画布部分添加点击编辑功能
+    const leanSections = document.querySelectorAll('.lean-section');
+    leanSections.forEach(section => {
+      section.style.cursor = 'pointer';
+      section.addEventListener('click', () => {
+        const contentElement = section.querySelector('.section-content');
+        if (contentElement) {
+          const sectionId = contentElement.id;
+          const currentContent = contentElement.textContent;
+          
+          // 创建编辑模态框
+          const modal = document.createElement('div');
+          modal.className = 'modal';
+          modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+          `;
+          
+          const modalContent = document.createElement('div');
+          modalContent.className = 'modal-content';
+          modalContent.style.cssText = `
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+          `;
+          
+          const title = document.createElement('h3');
+          title.textContent = section.querySelector('h4').textContent;
+          
+          const textarea = document.createElement('textarea');
+          textarea.value = currentContent;
+          textarea.style.width = '100%';
+          textarea.style.height = '200px';
+          textarea.style.margin = '10px 0';
+          
+          const buttonContainer = document.createElement('div');
+          buttonContainer.style.textAlign = 'right';
+          
+          const saveButton = document.createElement('button');
+          saveButton.className = 'btn';
+          saveButton.textContent = '保存';
+          saveButton.addEventListener('click', () => {
+            contentElement.textContent = textarea.value;
+            LeanCanvas.saveData();
+            document.body.removeChild(modal);
+            showMessage('内容已更新', 'success');
+          });
+          
+          const cancelButton = document.createElement('button');
+          cancelButton.className = 'btn';
+          cancelButton.textContent = '取消';
+          cancelButton.style.marginLeft = '10px';
+          cancelButton.addEventListener('click', () => {
+            document.body.removeChild(modal);
+          });
+          
+          buttonContainer.appendChild(saveButton);
+          buttonContainer.appendChild(cancelButton);
+          modalContent.appendChild(title);
+          modalContent.appendChild(textarea);
+          modalContent.appendChild(buttonContainer);
+          modal.appendChild(modalContent);
+          
+          document.body.appendChild(modal);
+          
+          // 点击模态框外部关闭模态框
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              document.body.removeChild(modal);
+            }
+          });
+        }
+      });
+    });
     
     // 设置自动保存
     const leanElements = document.querySelectorAll('[id^="lean-"]');
